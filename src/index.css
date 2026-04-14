@@ -1,0 +1,37 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #eaf4ff;
+}
+
+h1, h2, h3 {
+  margin: 0;
+}
+
+button {
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.bigCard {
+  min-width: 260px;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
