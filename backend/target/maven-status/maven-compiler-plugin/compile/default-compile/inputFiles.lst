@@ -1,5 +1,6 @@
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\config\DataSeeder.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\config\JpaConfig.java
+C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\config\PasswordConfig.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\config\RazorpayConfig.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\config\SecurityConfig.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\controller\AdminController.java
@@ -12,6 +13,7 @@ C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\c
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\controller\PartnerController.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\controller\PaymentController.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\controller\ServiceController.java
+C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\controller\TestController.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\auth\AdminLoginRequest.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\auth\AuthResponse.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\auth\CustomerLoginRequest.java
