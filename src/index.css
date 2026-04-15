@@ -1,5 +1,12 @@
-body {
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
   margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
   font-family: 'Poppins', sans-serif;
   background: #eaf4ff;
   color: #102542;
@@ -15,8 +22,18 @@ iframe {
   max-width: 100%;
 }
 
-#root {
-  min-height: 100vh;
+.page-padding,
+.page-shell,
+.page-section {
+  width: 100%;
+  max-width: 100%;
+}
+
+input,
+button,
+select,
+textarea {
+  max-width: 100%;
 }
 
 a {
