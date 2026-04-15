@@ -2,7 +2,7 @@ package com.sathihomecare.backend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
+import java.nio.charset.StandardCharsets;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
@@ -39,6 +39,10 @@ public class JwtService {
                 && extractAllClaims(token).getExpiration().after(new Date());
     }
 
+    public long getExpirationTimestamp(String token) {
+        return extractAllClaims(token).getExpiration().getTime();
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith((javax.crypto.SecretKey) getSigningKey())
@@ -48,7 +52,7 @@ public class JwtService {
     }
 
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(java.util.Base64.getEncoder().encodeToString(jwtSecret.getBytes()));
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { serviceAssets } from "../assets";
+import { usePageSeo } from "../hooks/usePageSeo";
 import { servicesData } from "../data/servicesData";
 import { apiFetch } from "../api";
 import { useCart } from "../hooks/useCart";
@@ -25,13 +27,18 @@ const serviceCategoryMap = {
 };
 
 const serviceImages = {
-  nursing: servicesData.nursing[0].image,
-  therapy: servicesData.therapy[0].image,
-  counselling: servicesData.counselling[0].image,
-  default: servicesData.nursing[0].image
+  nursing: serviceAssets.nursing,
+  therapy: serviceAssets.therapy,
+  counselling: serviceAssets.counselling,
+  default: serviceAssets.nursing
 };
 
 export default function Services() {
+  usePageSeo({
+    title: "Services | Sathi Homecare",
+    description: "Browse Sathi Homecare nursing, ayurvedic therapy and counselling services with responsive booking-ready cards and current pricing."
+  });
+
   const [searchParams] = useSearchParams();
   const { cart, addToCart, removeFromCart } = useCart();
   const [backendServices, setBackendServices] = useState([]);
@@ -89,7 +96,7 @@ export default function Services() {
   const getQty = (id) => cart.find((item) => item.id === id)?.quantity || 0;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f8fb", color: "#102542", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", paddingBottom: "80px" }}>
+    <div style={{ minHeight: "100vh", background: "#f6f8fb", color: "#102542", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", paddingBottom: "80px" }} className="page-padding">
       <section style={{ background: "linear-gradient(135deg, #0a2440, #0d594f)", padding: "48px 24px" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
           <p style={{ margin: 0, color: "#8de3d4", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, fontSize: "13px" }}>Service catalogue</p>
@@ -147,7 +154,7 @@ export default function Services() {
               return (
                 <article key={`${item.type}-${item.id}`} style={{ background: "#ffffff", borderRadius: "24px", overflow: "hidden", boxShadow: "0 18px 42px rgba(15, 23, 42, 0.08)", border: "1px solid #eef2f7", display: "flex", flexDirection: "column" }}>
                   <div style={{ position: "relative", height: "220px", background: "linear-gradient(145deg, #effcf8, #e0f2fe)" }}>
-                    <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "contain", padding: "24px" }} />
+                    <img src={item.image} alt={item.name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", padding: "24px" }} />
                     <div style={{ position: "absolute", top: "14px", left: "14px", background: "#1cb5ac", color: "#ffffff", padding: "6px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 700 }}>
                       {categoryLabels[item.type]}
                     </div>

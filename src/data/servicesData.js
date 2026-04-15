@@ -1,6 +1,8 @@
-import nursingImg from "../assets/nursing.png";
-import therapyImg from "../assets/icu.png";
-import counsellingImg from "../assets/old care.png";
+import { serviceAssets } from "../assets";
+
+const nursingImg = serviceAssets.nursing;
+const therapyImg = serviceAssets.therapy;
+const counsellingImg = serviceAssets.counselling;
 
 export const servicesData = {
   nursing: [

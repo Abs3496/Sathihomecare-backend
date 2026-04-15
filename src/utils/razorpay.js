@@ -25,6 +25,7 @@ export async function launchRazorpayPayment({
   order,
   prefill,
   verifyPayment,
+  markPaymentFailed,
   onStepChange
 }) {
   const hasRazorpayKey = razorpayKeyId && !razorpayKeyId.includes("your_key");
@@ -68,12 +69,33 @@ export async function launchRazorpayPayment({
         }
       },
       modal: {
-        ondismiss: () => reject(new Error("Payment popup closed before completing payment. You can retry payment for the same booking."))
+        ondismiss: async () => {
+          try {
+            await markPaymentFailed?.({
+              bookingId: booking.id,
+              razorpayOrderId: order.gatewayOrderId,
+              failureReason: "Payment popup closed before completing payment."
+            });
+          } catch {
+            // Keep checkout retryable even if the failure status endpoint is temporarily unreachable.
+          }
+          reject(new Error("Payment popup closed before completing payment. You can retry payment for the same booking."));
+        }
       }
     });
 
-    razorpay.on("payment.failed", (response) => {
+    razorpay.on("payment.failed", async (response) => {
       const message = response?.error?.description || "Payment failed. Please try again.";
+      try {
+        await markPaymentFailed?.({
+          bookingId: booking.id,
+          razorpayOrderId: order.gatewayOrderId,
+          razorpayPaymentId: response?.error?.metadata?.payment_id || "",
+          failureReason: message
+        });
+      } catch {
+        // Keep checkout retryable even if the failure status endpoint is temporarily unreachable.
+      }
       reject(new Error(message));
     });
 

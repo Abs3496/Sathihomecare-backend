@@ -1,11 +1,17 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { usePageSeo } from "../../hooks/usePageSeo";
 import BookingCard from "../../components/BookingCard";
 import { useAuth } from "../../hooks/useAuth";
 import { launchRazorpayPayment } from "../../utils/razorpay";
 
 export default function UserDashboard() {
-  const { customer, bookings, cancelBooking, logout, updateCustomerProfile, createPaymentOrder, verifyPayment } = useAuth();
+  usePageSeo({
+    title: "My Dashboard | Sathi Homecare",
+    description: "Manage your Sathi Homecare profile, track bookings and retry secure payments from your customer dashboard."
+  });
+
+  const { customer, bookings, cancelBooking, logout, updateCustomerProfile, createPaymentOrder, verifyPayment, markPaymentFailed } = useAuth();
   const [profileForm, setProfileForm] = useState({
     fullName: customer?.name || "",
     email: customer?.email || "",
@@ -52,6 +58,7 @@ export default function UserDashboard() {
           contact: customer?.phone || booking.patientPhone || ""
         },
         verifyPayment,
+        markPaymentFailed,
         onStepChange: (step) => {
           if (step === "verifying") {
             setPaymentMessage(`Verifying payment for booking #${booking.id}...`);
@@ -68,7 +75,7 @@ export default function UserDashboard() {
   };
 
   return (
-    <div style={pageStyle}>
+    <div style={pageStyle} className="page-padding">
       <div style={shellStyle}>
         <div style={topBar}>
           <div>
@@ -81,7 +88,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        <section style={profileCard}>
+        <section style={profileCard} className="profile-card-row compact-mobile-card">
           <div style={avatar}>{customer?.name?.charAt(0) || "U"}</div>
           <div style={{ flex: 1 }}>
             <h2 style={{ margin: 0, fontSize: "28px", color: "#102542" }}>{customer?.name}</h2>

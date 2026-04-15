@@ -27,6 +27,7 @@ com\sathihomecare\backend\exception\GlobalExceptionHandler.class
 com\sathihomecare\backend\dto\service\ServiceResponse$ServiceResponseBuilder.class
 com\sathihomecare\backend\entity\PartnerProfile.class
 com\sathihomecare\backend\entity\BaseEntity.class
+com\sathihomecare\backend\config\DataSeeder$AdminSeed.class
 com\sathihomecare\backend\controller\PartnerBookingController.class
 com\sathihomecare\backend\security\JwtService.class
 com\sathihomecare\backend\entity\User.class

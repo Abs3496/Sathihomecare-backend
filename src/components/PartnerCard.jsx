@@ -9,7 +9,7 @@ export default function PartnerCard({ partner }) {
         border: "1px solid #e6eef6"
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "18px" }} className="partner-card-header">
         <div
           style={{
             width: "74px",

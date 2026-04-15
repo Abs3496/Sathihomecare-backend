@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,23 +26,39 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException exception) {
-        String message = exception.getBindingResult().getFieldErrors().stream()
-                .findFirst()
-                .map(error -> error.getField() + " " + error.getDefaultMessage())
-                .orElse("Validation failed");
-        return build(HttpStatus.BAD_REQUEST, message);
+        Map<String, String> errors = new HashMap<>();
+        exception.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        return build(HttpStatus.BAD_REQUEST, "Validation failed", errors);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleBadJson(HttpMessageNotReadableException exception) {
+        return build(HttpStatus.BAD_REQUEST, "Malformed request payload");
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException exception) {
+        return build(HttpStatus.FORBIDDEN, "You do not have permission to perform this action.");
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception exception) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong on the server. Please try again.");
     }
 
     private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message) {
+        return build(status, message, null);
+    }
+
+    private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message, Object errors) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());
         body.put("message", message);
+        if (errors != null) {
+            body.put("errors", errors);
+        }
         return ResponseEntity.status(status).body(body);
     }
 }

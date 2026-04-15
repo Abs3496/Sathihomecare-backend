@@ -10,6 +10,7 @@ export default function CartBar() {
 
   return (
     <div
+      className="cartbar"
       style={{
         position: "fixed",
         right: "18px",

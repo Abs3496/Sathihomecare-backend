@@ -1,0 +1,14 @@
+<svg width="800" height="960" viewBox="0 0 800 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="960" rx="36" fill="url(#paint0_linear)"/>
+  <circle cx="400" cy="312" r="164" fill="#FEF3C7"/>
+  <path d="M290 302C290 241.801 338.801 193 399 193H401C461.199 193 510 241.801 510 302V330C510 390.199 461.199 439 401 439H399C338.801 439 290 390.199 290 330V302Z" fill="#854D0E"/>
+  <path d="M256 816C256 718.828 334.828 640 432 640H368C465.172 640 544 718.828 544 816V840H256V816Z" fill="#78350F"/>
+  <text x="400" y="112" text-anchor="middle" fill="#0F172A" font-family="Poppins, Arial, sans-serif" font-size="38" font-weight="700">Founder Portrait Placeholder</text>
+  <text x="400" y="894" text-anchor="middle" fill="#451A03" font-family="Poppins, Arial, sans-serif" font-size="28">Replace with /assets/images/founders/dharmendra.jpg</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="60" y1="36" x2="742" y2="908" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="1" stop-color="#FDBA74"/>
+    </linearGradient>
+  </defs>
+</svg>

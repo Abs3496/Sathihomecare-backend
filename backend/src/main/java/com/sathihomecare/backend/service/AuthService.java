@@ -13,6 +13,7 @@ import com.sathihomecare.backend.repository.PartnerProfileRepository;
 import com.sathihomecare.backend.repository.UserRepository;
 import com.sathihomecare.backend.security.CustomUserDetails;
 import com.sathihomecare.backend.security.JwtService;
+import java.time.Instant;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -88,6 +89,7 @@ public class AuthService {
                 .phone(user.getPhone())
                 .role(user.getRole())
                 .employeeId(employeeId)
+                .expiresAt(Instant.ofEpochMilli(jwtService.getExpirationTimestamp(token)))
                 .build();
     }
 

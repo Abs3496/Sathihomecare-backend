@@ -4,6 +4,7 @@ import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
+import com.sathihomecare.backend.dto.payment.PaymentFailureRequest;
 import com.sathihomecare.backend.dto.payment.PaymentOrderRequest;
 import com.sathihomecare.backend.dto.payment.PaymentResponse;
 import com.sathihomecare.backend.dto.payment.PaymentVerifyRequest;
@@ -128,6 +129,42 @@ public class PaymentService {
                 .amount(payment.getAmount())
                 .status(PaymentStatus.SUCCESS.name())
                 .message("Payment verified successfully")
+                .build();
+    }
+
+    @Transactional
+    public PaymentResponse markPaymentFailed(PaymentFailureRequest request, String username) {
+        Booking booking = bookingRepository.findById(request.getBookingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        if (!booking.getCustomer().getEmail().equals(username) && !booking.getCustomer().getPhone().equals(username)) {
+            throw new IllegalArgumentException("Booking does not belong to the authenticated customer");
+        }
+
+        Payment payment = paymentRepository.findByBooking(booking)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment record not found for booking"));
+
+        if (!request.getRazorpayOrderId().equals(payment.getGatewayOrderId())) {
+            throw new IllegalArgumentException("Razorpay order ID does not match the initiated payment");
+        }
+
+        if (payment.getPaymentStatus() != PaymentStatus.SUCCESS) {
+            payment.setGatewayPaymentId(request.getRazorpayPaymentId());
+            payment.setPaymentStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+            booking.setPaymentStatus(PaymentStatus.FAILED);
+            booking.setBookingStatus(BookingStatus.PENDING_PAYMENT);
+            bookingRepository.save(booking);
+        }
+
+        return PaymentResponse.builder()
+                .bookingId(booking.getId())
+                .gatewayOrderId(payment.getGatewayOrderId())
+                .gatewayPaymentId(payment.getGatewayPaymentId())
+                .currency("INR")
+                .amount(payment.getAmount())
+                .status(PaymentStatus.FAILED.name())
+                .message(request.getFailureReason())
                 .build();
     }
 }

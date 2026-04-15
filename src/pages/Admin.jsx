@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { usePageSeo } from "../hooks/usePageSeo";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Admin() {
+  usePageSeo({
+    title: "Admin Dashboard | Sathi Homecare",
+    description: "Manage partners, bookings, services and requests from the Sathi Homecare admin dashboard."
+  });
+
   const {
     admin,
     loginAdmin,
@@ -119,7 +125,7 @@ export default function Admin() {
       await loginAdmin(credentials);
       setError("");
     } catch (err) {
-      setError(err?.message || "Invalid admin credentials. Use Abhishekadmin@sathihomecare.in / adminabhishek@123");
+      setError(err?.message || "Invalid admin credentials.");
     }
   };
 
@@ -280,7 +286,7 @@ export default function Admin() {
   }
 
   return (
-    <div style={pageStyle}>
+    <div style={pageStyle} className="page-padding">
       <div style={shellStyle}>
         <div style={topBar}>
           <div>
@@ -301,7 +307,7 @@ export default function Admin() {
           <StatCard label="Completed" value={stats.completed} />
         </div>
 
-        <div style={dashboardGrid}>
+        <div style={dashboardGrid} className="admin-dashboard-grid">
           <section style={panelStyle}>
             <h2 style={panelTitle}>{editingPartnerId ? "Edit Partner" : "Add New Partner"}</h2>
             <form onSubmit={handleAddPartner} style={{ display: "grid", gap: "14px", marginTop: "18px" }}>
@@ -397,7 +403,7 @@ export default function Admin() {
           </section>
         </div>
 
-        <div style={dashboardGrid}>
+        <div style={dashboardGrid} className="admin-dashboard-grid">
           <section style={panelStyle}>
             <h2 style={panelTitle}>{editingServiceId ? "Edit Service" : "Add New Service"}</h2>
             <form onSubmit={handleServiceSubmit} style={{ display: "grid", gap: "14px", marginTop: "18px" }}>

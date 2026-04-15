@@ -23,6 +23,7 @@ C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\c
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\partner\PartnerCreateRequest.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\partner\PartnerSummaryResponse.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\partner\PartnerUpdateRequest.java
+C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\payment\PaymentFailureRequest.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\payment\PaymentOrderRequest.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\payment\PaymentResponse.java
 C:\Users\LENOVO\OneDrive\Desktop\sathi-front\sathi-front\backend\src\main\java\com\sathihomecare\backend\dto\payment\PaymentVerifyRequest.java

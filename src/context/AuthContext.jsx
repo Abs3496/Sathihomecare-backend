@@ -1,5 +1,11 @@
 import { createContext, useCallback, useEffect, useState } from "react";
 import { apiFetch, authFetch } from "../api";
+import {
+  createStoredSession,
+  getAuthErrorMessage,
+  isTokenExpired,
+  readStoredSession
+} from "../utils/authSession";
 
 const AuthContext = createContext();
 
@@ -103,8 +109,9 @@ function sanitizeStoredPartners(raw) {
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : defaultSession;
+    return readStoredSession(raw, defaultSession);
   });
+  const [isSessionReady, setIsSessionReady] = useState(false);
 
   const [partners, setPartners] = useState(() => {
     const raw = localStorage.getItem(PARTNERS_KEY);
@@ -115,12 +122,41 @@ export function AuthProvider({ children }) {
   const [services, setServices] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    if (session?.token) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(createStoredSession(session)));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
   }, [session]);
 
   useEffect(() => {
     localStorage.setItem(PARTNERS_KEY, JSON.stringify(partners));
   }, [partners]);
+
+  useEffect(() => {
+    if (!session?.token) {
+      setIsSessionReady(true);
+      return undefined;
+    }
+
+    if (isTokenExpired(session.token)) {
+      setSession(defaultSession);
+      setBookings([]);
+      setIsSessionReady(true);
+      return undefined;
+    }
+
+    setIsSessionReady(true);
+    const expiry = createStoredSession(session).expiresAt;
+    if (!expiry) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setSession(defaultSession);
+      setBookings([]);
+    }, Math.max(0, expiry - Date.now()));
+
+    return () => window.clearTimeout(timeoutId);
+  }, [session]);
 
   useEffect(() => {
     if (!session.token || !session.customer) {
@@ -140,6 +176,10 @@ export function AuthProvider({ children }) {
         );
       } catch (error) {
         if (!active) return;
+        if (error?.status === 401 || error?.status === 403) {
+          logout();
+          return;
+        }
         console.warn("Unable to refresh customer bookings", error);
       }
     };
@@ -160,6 +200,9 @@ export function AuthProvider({ children }) {
       setBookings(normalized);
       return normalized;
     } catch (error) {
+      if (error?.status === 401 || error?.status === 403) {
+        logout();
+      }
       console.warn("Unable to refresh customer bookings", error);
       throw error;
     }
@@ -237,6 +280,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setSession(defaultSession);
     setBookings([]);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const updateCustomerProfile = async ({ fullName, email, phone }) => {
@@ -244,10 +288,16 @@ export function AuthProvider({ children }) {
       throw new Error("Please login before updating your profile.");
     }
 
-    const response = await authFetch(session.token, "/customer/me", {
-      method: "PUT",
-      body: JSON.stringify({ fullName, email, phone })
-    });
+    let response;
+    try {
+      response = await authFetch(session.token, "/customer/me", {
+        method: "PUT",
+        body: JSON.stringify({ fullName, email, phone })
+      });
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) logout();
+      throw new Error(getAuthErrorMessage(error, "Unable to update your profile."));
+    }
 
     const customer = {
       id: response.userId,
@@ -264,19 +314,15 @@ export function AuthProvider({ children }) {
     return customer;
   };
 
-  const findServiceByName = async (serviceName) => {
-    const serviceList = await apiFetch("/services");
-    return serviceList.find((item) => item.name?.toLowerCase() === serviceName?.toLowerCase());
-  };
-
   const addBooking = async (booking) => {
     if (!session.token) {
       throw new Error("Please login before placing a booking.");
     }
 
-    const service = booking.serviceId
-      ? { id: booking.serviceId }
-      : await findServiceByName(booking.serviceName || booking.service);
+    const serviceList = await apiFetch("/services");
+    const normalizedName = String(booking.serviceName || booking.service || "").trim().toLowerCase();
+    const service = serviceList.find((item) => item.id === booking.serviceId)
+      || serviceList.find((item) => item.name?.trim?.().toLowerCase() === normalizedName);
     if (!service) {
       throw new Error(`Service not found in backend: ${booking.serviceName || booking.service}`);
     }
@@ -304,10 +350,16 @@ export function AuthProvider({ children }) {
       patientIssues: booking.patientIssues
     };
 
-    const response = await authFetch(session.token, "/customer/bookings", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
+    let response;
+    try {
+      response = await authFetch(session.token, "/customer/bookings", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) logout();
+      throw new Error(getAuthErrorMessage(error, "Unable to create booking."));
+    }
 
     const normalized = normalizeBooking(response, session.customer?.email || "");
     setBookings((prev) => [normalized, ...prev]);
@@ -534,10 +586,15 @@ export function AuthProvider({ children }) {
       throw new Error("Please login before initiating payment.");
     }
 
-    return authFetch(session.token, "/payments/create-order", {
-      method: "POST",
-      body: JSON.stringify({ bookingId })
-    });
+    try {
+      return await authFetch(session.token, "/payments/create-order", {
+        method: "POST",
+        body: JSON.stringify({ bookingId })
+      });
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) logout();
+      throw new Error(getAuthErrorMessage(error, "Unable to initiate payment."));
+    }
   };
 
   const verifyPayment = async ({
@@ -550,21 +607,53 @@ export function AuthProvider({ children }) {
       throw new Error("Please login before verifying payment.");
     }
 
-    const response = await authFetch(session.token, "/payments/verify", {
-      method: "POST",
-      body: JSON.stringify({
-        bookingId,
-        razorpayOrderId,
-        razorpayPaymentId,
-        razorpaySignature
-      })
-    });
+    let response;
+    try {
+      response = await authFetch(session.token, "/payments/verify", {
+        method: "POST",
+        body: JSON.stringify({
+          bookingId,
+          razorpayOrderId,
+          razorpayPaymentId,
+          razorpaySignature
+        })
+      });
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) logout();
+      throw new Error(getAuthErrorMessage(error, "Payment verification failed."));
+    }
 
     if (session.customer?.email) {
       await refreshCustomerBookings(session.token, session.customer.email);
     }
 
     return response;
+  };
+
+  const markPaymentFailed = async ({
+    bookingId,
+    razorpayOrderId,
+    razorpayPaymentId = "",
+    failureReason
+  }) => {
+    if (!session.token) {
+      throw new Error("Please login before updating payment status.");
+    }
+
+    try {
+      return await authFetch(session.token, "/payments/fail", {
+        method: "POST",
+        body: JSON.stringify({
+          bookingId,
+          razorpayOrderId,
+          razorpayPaymentId,
+          failureReason
+        })
+      });
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) logout();
+      throw new Error(getAuthErrorMessage(error, "Unable to update failed payment status."));
+    }
   };
 
   const updateBookingStatus = (id, status) => {
@@ -584,9 +673,15 @@ export function AuthProvider({ children }) {
       throw new Error("Please login before cancelling a booking.");
     }
 
-    const response = await authFetch(session.token, `/customer/bookings/${id}`, {
-      method: "DELETE"
-    });
+    let response;
+    try {
+      response = await authFetch(session.token, `/customer/bookings/${id}`, {
+        method: "DELETE"
+      });
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) logout();
+      throw new Error(getAuthErrorMessage(error, "Unable to cancel booking."));
+    }
 
     const normalized = normalizeBooking(response, session.customer?.email || "");
     setBookings((prev) => prev.map((booking) => (booking.id === id ? normalized : booking)));
@@ -619,6 +714,7 @@ export function AuthProvider({ children }) {
     partner: session.partner,
     admin: session.admin,
     token: session.token,
+    isSessionReady,
     partners,
     bookings,
     services,
@@ -631,6 +727,7 @@ export function AuthProvider({ children }) {
     addBooking,
     createPaymentOrder,
     verifyPayment,
+    markPaymentFailed,
     refreshCustomerBookings,
     fetchAdminPartners,
     fetchAdminBookings,

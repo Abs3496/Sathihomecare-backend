@@ -1,0 +1,14 @@
+<svg width="800" height="960" viewBox="0 0 800 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="960" rx="36" fill="url(#paint0_linear)"/>
+  <circle cx="400" cy="312" r="162" fill="#DBEAFE"/>
+  <path d="M302 308C302 253.324 346.324 209 401 209C455.676 209 500 253.324 500 308V339C500 393.676 455.676 438 401 438C346.324 438 302 393.676 302 339V308Z" fill="#1E3A8A"/>
+  <path d="M250 816C250 718.276 329.276 639 427 639H373C470.724 639 550 718.276 550 816V840H250V816Z" fill="#1E40AF"/>
+  <text x="400" y="112" text-anchor="middle" fill="#EFF6FF" font-family="Poppins, Arial, sans-serif" font-size="38" font-weight="700">Founder Portrait Placeholder</text>
+  <text x="400" y="894" text-anchor="middle" fill="#DBEAFE" font-family="Poppins, Arial, sans-serif" font-size="28">Replace with /assets/images/founders/pinku.jpg</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="46" y1="36" x2="748" y2="914" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+</svg>

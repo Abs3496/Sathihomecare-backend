@@ -7,6 +7,7 @@ import PartnerLogin from "./pages/partner/PartnerLogin";
 import PartnerDashboard from "./pages/partner/PartnerDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
 import Admin from "./pages/Admin";
+import KnowFounders from "./pages/KnowFounders";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsConditions from "./pages/legal/TermsConditions";
 import RefundPolicy from "./pages/legal/RefundPolicy";
@@ -24,6 +25,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/partner/login" element={<PartnerLogin />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/founders" element={<KnowFounders />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-conditions" element={<TermsConditions />} />

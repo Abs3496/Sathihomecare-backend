@@ -2,6 +2,25 @@ body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
   background: #eaf4ff;
+  color: #102542;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
 }
 
 h1, h2, h3 {
@@ -34,4 +53,71 @@ button:hover {
   border-radius: 20px;
   cursor: pointer;
   box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 900px) {
+  .login-shell,
+  .admin-dashboard-grid,
+  .checkout-grid,
+  .home-location-grid,
+  .founders-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .summary-column {
+    position: static !important;
+    top: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-hero-search-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .profile-card-row,
+  .partner-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .gateway-info-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .gateway-badge {
+    width: 100% !important;
+    min-height: auto !important;
+  }
+
+  .cartbar {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    top: auto !important;
+    transform: none !important;
+    width: auto !important;
+    border-radius: 18px !important;
+    padding: 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell,
+  .page-section,
+  .page-padding {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .compact-mobile-card {
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  .full-mobile-button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }

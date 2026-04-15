@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { homepageAssets } from "../assets";
+import { usePageSeo } from "../hooks/usePageSeo";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
-import nursing from "../assets/nursing.png";
-import icu from "../assets/icu.png";
-import oldcare from "../assets/old care.png";
-import heroNursing from "../assets/heronursing.png";
 import { servicesData } from "../data/servicesData";
+
+const nursing = homepageAssets.serviceIcons.nursing;
+const icu = homepageAssets.serviceIcons.therapy;
+const oldcare = homepageAssets.serviceIcons.consultation;
+const heroNursing = homepageAssets.heroBanner;
 
 const heroCards = [
   { title: "Nursing Services", subtitle: "Certified support at home", offer: "UP TO 30% OFF", image: heroNursing, type: "nursing" },
@@ -30,8 +33,8 @@ const scrollingDiscoverServices = [...discoverServices, ...discoverServices];
 const featuredServices = [
   { id: "patient-care", serviceId: 1, title: "Patient Care at Home", category: "Nursing | Daily Support", price: "Rs. 1500", timing: "Round-the-clock bedside assistance", offer: "Flat 15% off on walk-in booking", extra: "Extra 10% off using SATHI10", image: nursing, type: "nursing", query: "patient care" },
   { id: "elder-care", serviceId: 2, title: "Elderly Care", category: "Senior Support | Compassionate Assistance", price: "Rs. 2000", timing: "24x7 attendant support available", offer: "Flat 20% off on pre-booking", extra: "Free consultation before first visit", image: oldcare, type: "nursing", query: "elderly care" },
-  { id: "full-body-therapy", serviceId: 107, title: "Full Body Massage Therapy", category: "Ayurvedic | Relaxation", price: "Rs. 999", timing: "Rejuvenation sessions at home", offer: "Flat 18% off this week", extra: "Combo discount on repeat sessions", image: icu, type: "therapy", query: "massage" },
-  { id: "mental-health", serviceId: 216, title: "Mental Health Session", category: "Counselling | Emotional Support", price: "Rs. 799", timing: "Confidential one-on-one guidance", offer: "Flat 12% off on first session", extra: "Family support add-on available", image: oldcare, type: "counselling", query: "mental health" }
+  { id: "full-body-therapy", serviceId: 107, title: "Abhyanga (Full Body Massage)", category: "Ayurvedic | Relaxation", price: "Rs. 999", timing: "Rejuvenation sessions at home", offer: "Flat 18% off this week", extra: "Combo discount on repeat sessions", image: icu, type: "therapy", query: "massage" },
+  { id: "mental-health", serviceId: 216, title: "Stress & Anxiety Management", category: "Counselling | Emotional Support", price: "Rs. 850", timing: "Confidential one-on-one guidance", offer: "Flat 12% off on first session", extra: "Family support add-on available", image: oldcare, type: "counselling", query: "stress anxiety" }
 ];
 
 const reviews = [
@@ -49,7 +52,12 @@ const stats = [
 
 const footerGroups = {
   services: ["Home Nursing", "Ayurvedic Therapy", "Counselling", "ICU Care at Home"],
-  company: ["About Us", "How It Works", "Join as Caregiver", "Contact Us"],
+  company: [
+    { label: "Know The Founders", to: "/founders" },
+    { label: "How It Works", to: "/services" },
+    { label: "Join as Caregiver", to: "/partner/login" },
+    { label: "Contact Us", to: "/" }
+  ],
   support: [
     { label: "Book a Visit", to: "/services" },
     { label: "FAQ", to: "/services" },
@@ -62,6 +70,11 @@ const footerGroups = {
 const mixedServices = [...servicesData.nursing.slice(0, 4), ...servicesData.therapy, ...servicesData.counselling];
 
 export default function Home() {
+  usePageSeo({
+    title: "Sathi Homecare | Trusted Nursing, Therapy and Counselling at Home",
+    description: "Book trusted home nursing, ayurvedic therapy, counselling and elder care with Sathi Homecare. Secure booking, responsive support and startup-ready care delivery."
+  });
+
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart } = useCart();
   const { customer, partner, logout } = useAuth();
@@ -151,9 +164,9 @@ export default function Home() {
           100% { transform: translateX(-50%); }
         }
       `}</style>
-      <section style={{ position: "relative", overflow: "hidden", background: "linear-gradient(180deg, #0a2440 0%, #0d594f 78%, #f8f7f2 78%, #f8f7f2 100%)", padding: "20px 24px 0" }}>
-        <video autoPlay loop muted playsInline style={{ position: "absolute", inset: 0, width: "100%", height: "78%", objectFit: "cover" }}>
-          <source src="/videos/hero.mp4" type="video/mp4" />
+      <section style={{ position: "relative", overflow: "hidden", background: "linear-gradient(180deg, #0a2440 0%, #0d594f 78%, #f8f7f2 78%, #f8f7f2 100%)", padding: "20px 24px 0" }} className="page-padding">
+        <video autoPlay loop muted playsInline poster={homepageAssets.heroBanner} style={{ position: "absolute", inset: 0, width: "100%", height: "78%", objectFit: "cover" }}>
+          <source src={homepageAssets.heroVideo} type="video/mp4" />
         </video>
         <div style={{ position: "absolute", inset: 0, height: "78%", background: "linear-gradient(90deg, rgba(8, 31, 53, 0.82) 0%, rgba(8, 31, 53, 0.68) 34%, rgba(12, 100, 82, 0.62) 100%)" }} />
         <div style={{ maxWidth: "1480px", margin: "0 auto", position: "relative", zIndex: 1 }}>
@@ -164,7 +177,7 @@ export default function Home() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "18px", flexWrap: "wrap" }}>
               <span style={{ color: "#fff3eb", fontSize: "14px", fontWeight: 600 }}>For Families</span>
-              <span style={{ color: "#fff3eb", fontSize: "14px", fontWeight: 600 }}>Partner with us</span>
+              <Link to="/founders" style={{ color: "#fff3eb", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>Know the Founders</Link>
               <Link to="/login" style={{ padding: "12px 18px", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.45)", textDecoration: "none", color: "#ffffff", fontWeight: 700, background: "rgba(255,255,255,0.06)" }}>Login As</Link>
               <Link to={dashboardPath} style={{ width: "42px", height: "42px", borderRadius: "50%", textDecoration: "none", background: "rgba(255,255,255,0.14)", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>
                 {customer?.name?.charAt(0) || partner?.name?.charAt(0) || "U"}
@@ -181,7 +194,7 @@ export default function Home() {
             <h1 style={{ margin: 0, color: "#ffffff", fontSize: "clamp(2.3rem, 4vw, 4rem)", lineHeight: 1.18, fontWeight: 800, letterSpacing: "-0.02em" }}>
               Book home services and discover trusted caregivers with Sathi Homecare.
             </h1>
-            <div style={{ marginTop: "28px", display: "grid", gridTemplateColumns: "minmax(360px, 1.15fr) minmax(300px, 0.85fr)", gap: "14px", alignItems: "start", justifyContent: "center" }}>
+            <div style={{ marginTop: "28px", display: "grid", gridTemplateColumns: "minmax(360px, 1.15fr) minmax(300px, 0.85fr)", gap: "14px", alignItems: "start", justifyContent: "center" }} className="home-hero-search-grid">
               <div style={{ position: "relative" }}>
                 <div style={{ background: "#ffffff", borderRadius: "18px", padding: "0 16px", display: "flex", alignItems: "center", minHeight: "60px", boxShadow: "0 14px 28px rgba(112, 47, 0, 0.12)" }}>
                   <span style={{ fontSize: "18px", color: "#1cb5ac", marginRight: "10px" }}>@</span>
@@ -219,7 +232,7 @@ export default function Home() {
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "16px" }}>
                     <div style={{ width: "58px", height: "58px", borderRadius: "50%", background: "#d7eefc", color: "#0c506c", boxShadow: "0 10px 24px rgba(12, 80, 108, 0.14)", border: "1px solid rgba(12, 80, 108, 0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", flexShrink: 0 }}>{">"}</div>
-                    <img src={card.image} alt={card.title} style={{ width: "160px", maxWidth: "55%", objectFit: "contain", alignSelf: "flex-end" }} />
+                    <img src={card.image} alt={card.title} loading="lazy" style={{ width: "160px", maxWidth: "55%", objectFit: "contain", alignSelf: "flex-end" }} />
                   </div>
                 </article>
               </Link>
@@ -233,7 +246,7 @@ export default function Home() {
             {scrollingDiscoverServices.map((item, index) => (
               <article key={`${item.title}-${index}`} style={{ textAlign: "center", minWidth: "140px", flex: "0 0 auto" }}>
                 <div style={{ width: "114px", height: "114px", margin: "0 auto 12px", borderRadius: "50%", background: "linear-gradient(145deg, #ffffff, #fde7d9)", boxShadow: "0 12px 30px rgba(29, 41, 57, 0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <img src={item.image} alt={item.title} style={{ width: "74px", height: "74px", objectFit: "contain" }} />
+                  <img src={item.image} alt={item.title} loading="lazy" style={{ width: "74px", height: "74px", objectFit: "contain" }} />
                 </div>
                 <h3 style={{ margin: 0, fontSize: "16px", color: "#1f2937" }}>{item.title}</h3>
                 <p style={{ margin: "6px 0 0", color: "#667085", fontSize: "13px" }}>{item.category}</p>
@@ -248,7 +261,7 @@ export default function Home() {
           {featuredServices.map((service) => (
             <article key={service.id} style={{ background: "#ffffff", borderRadius: "22px", overflow: "hidden", border: "1px solid #ececec", boxShadow: "0 14px 28px rgba(15, 23, 42, 0.05)" }}>
               <div style={{ position: "relative", height: "190px", background: "linear-gradient(145deg, #fff4ed, #ffe6d5)" }}>
-                <img src={service.image} alt={service.title} style={{ width: "100%", height: "100%", objectFit: "contain", padding: "18px" }} />
+                <img src={service.image} alt={service.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", padding: "18px" }} />
                 <div style={{ position: "absolute", left: "14px", top: "14px", background: "#1aa398", color: "#ffffff", padding: "6px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" }}>Care Special</div>
               </div>
               <div style={{ padding: "16px" }}>
@@ -333,8 +346,8 @@ export default function Home() {
       </section>
 
       {locationCoords ? (
-        <section style={{ maxWidth: "1480px", margin: "0 auto", padding: "56px 24px 0" }}>
-          <div style={{ background: "#ffffff", borderRadius: "28px", padding: "24px", boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)", display: "grid", gridTemplateColumns: "minmax(260px, 0.9fr) minmax(320px, 1.1fr)", gap: "20px", alignItems: "stretch" }}>
+        <section style={{ maxWidth: "1480px", margin: "0 auto", padding: "56px 24px 0" }} className="page-section">
+          <div style={{ background: "#ffffff", borderRadius: "28px", padding: "24px", boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)", display: "grid", gridTemplateColumns: "minmax(260px, 0.9fr) minmax(320px, 1.1fr)", gap: "20px", alignItems: "stretch" }} className="home-location-grid compact-mobile-card">
             <div>
               <p style={{ margin: 0, color: "#1aa398", fontWeight: 700, fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Selected location</p>
               <h2 style={{ margin: "10px 0 0", color: "#102542", fontSize: "clamp(1.8rem, 3vw, 2.3rem)" }}>Service availability near you</h2>
@@ -355,7 +368,7 @@ export default function Home() {
         </section>
       ) : null}
 
-      <footer style={{ marginTop: "52px", background: "#111827", color: "#cbd5e1", padding: "54px 24px 22px" }}>
+      <footer style={{ marginTop: "52px", background: "#111827", color: "#cbd5e1", padding: "54px 24px 22px" }} className="page-padding">
         <div style={{ maxWidth: "1480px", margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(260px, 1.3fr) repeat(auto-fit, minmax(170px, 1fr))", gap: "26px" }}>
           <div style={{ maxWidth: "380px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -392,7 +405,7 @@ function inferServiceType(name) {
 
 function SectionShell({ title, subtitle, children }) {
   return (
-    <section style={{ maxWidth: "1480px", margin: "0 auto", padding: "56px 24px 0" }}>
+    <section style={{ maxWidth: "1480px", margin: "0 auto", padding: "56px 24px 0" }} className="page-section">
       <div style={{ marginBottom: "26px" }}>
         <p style={{ margin: 0, color: "#1aa398", fontWeight: 700, fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Discover care</p>
         <h2 style={{ margin: "10px 0 0", color: "#1f2937", fontSize: "clamp(2rem, 3vw, 2.8rem)" }}>{title}</h2>

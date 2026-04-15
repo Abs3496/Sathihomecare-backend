@@ -41,8 +41,8 @@ export default function Login() {
   };
 
   return (
-    <div style={pageStyle}>
-      <div style={shellStyle}>
+    <div style={pageStyle} className="page-padding">
+      <div style={shellStyle} className="login-shell">
         <div style={leftPane}>
           <p style={eyebrow}>Choose your role</p>
           <h1 style={title}>Login As</h1>

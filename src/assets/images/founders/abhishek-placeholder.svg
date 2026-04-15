@@ -1,0 +1,15 @@
+<svg width="800" height="960" viewBox="0 0 800 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="960" rx="36" fill="url(#paint0_linear)"/>
+  <circle cx="400" cy="318" r="160" fill="#E2E8F0"/>
+  <path d="M194 788C194 641.109 313.109 522 460 522H340C486.891 522 606 641.109 606 788V840H194V788Z" fill="#0F172A" fill-opacity="0.18"/>
+  <path d="M304 320C304 266.98 346.98 224 400 224C453.02 224 496 266.98 496 320C496 373.02 453.02 416 400 416C346.98 416 304 373.02 304 320Z" fill="#0F172A" fill-opacity="0.72"/>
+  <path d="M280 812C280 719.216 355.216 644 448 644H352C444.784 644 520 719.216 520 812V840H280V812Z" fill="#0F172A" fill-opacity="0.72"/>
+  <text x="400" y="110" text-anchor="middle" fill="#F8FAFC" font-family="Poppins, Arial, sans-serif" font-size="38" font-weight="700">Founder Portrait Placeholder</text>
+  <text x="400" y="894" text-anchor="middle" fill="#E2E8F0" font-family="Poppins, Arial, sans-serif" font-size="28">Replace with /assets/images/founders/abhishek.jpg</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="44" y1="40" x2="756" y2="916" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+</svg>

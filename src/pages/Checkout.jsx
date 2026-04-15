@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { usePageSeo } from "../hooks/usePageSeo";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { launchRazorpayPayment } from "../utils/razorpay";
@@ -11,8 +12,13 @@ const paymentMethods = [
 ];
 
 export default function Checkout() {
+  usePageSeo({
+    title: "Checkout | Sathi Homecare",
+    description: "Complete your Sathi Homecare booking with customer details, secure Razorpay checkout and policy consent."
+  });
+
   const { cart, cartTotal, clearCart, addToCart, removeFromCart } = useCart();
-  const { customer, addBooking, createPaymentOrder, verifyPayment } = useAuth();
+  const { customer, addBooking, createPaymentOrder, verifyPayment, markPaymentFailed } = useAuth();
   const user = customer;
   const [orderLoading, setOrderLoading] = useState(false);
   const [paymentStep, setPaymentStep] = useState("idle");
@@ -72,6 +78,7 @@ export default function Checkout() {
         contact: patientForm.customerPhone || user?.phone || ""
       },
       verifyPayment,
+      markPaymentFailed,
       onStepChange: (step) => {
         setPaymentStep(step);
         if (step === "verifying") {
@@ -181,7 +188,7 @@ export default function Checkout() {
 
   if (orderPlaced) {
     return (
-      <div style={pageStyle}>
+      <div style={pageStyle} className="page-padding">
         <div style={successCard}>
           <p style={sectionEyebrow}>Order confirmed</p>
           <h1 style={successTitle}>Service request placed successfully</h1>
@@ -205,7 +212,7 @@ export default function Checkout() {
   }
 
   return (
-    <div style={pageStyle}>
+    <div style={pageStyle} className="page-padding">
       <div style={shellStyle}>
         <div style={headerRow}>
           <div>
@@ -227,7 +234,7 @@ export default function Checkout() {
           </div>
         ) : null}
 
-        <div style={checkoutGrid}>
+        <div style={checkoutGrid} className="checkout-grid">
           <div style={leftColumn}>
             <section style={cardStyle}>
               <h2 style={cardTitle}>Customer and Patient Details</h2>
@@ -282,7 +289,7 @@ export default function Checkout() {
                 ))}
               </div>
 
-              <div style={gatewayInfoCard}>
+              <div style={gatewayInfoCard} className="gateway-info-card">
                 <div>
                   <p style={sectionEyebrow}>Secure Gateway</p>
                   <h3 style={{ margin: "8px 0 0", fontSize: "24px", color: "#102542" }}>Pay securely with Razorpay</h3>
@@ -295,7 +302,7 @@ export default function Checkout() {
                     </p>
                   ) : null}
                 </div>
-                <div style={gatewayBadge}>
+                <div style={gatewayBadge} className="gateway-badge">
                   <span style={{ fontSize: "14px", fontWeight: 800, letterSpacing: "0.08em", color: "#0f766e" }}>RAZORPAY</span>
                   <span style={{ marginTop: "10px", color: "#475569", textAlign: "center", lineHeight: 1.6 }}>
                     Live payment gateway for customer checkout
@@ -317,7 +324,7 @@ export default function Checkout() {
             </section>
           </div>
 
-          <aside style={summaryColumn}>
+          <aside style={summaryColumn} className="summary-column">
             <section style={cardStyle}>
               <h2 style={cardTitle}>Booking Summary</h2>
               {cart.length ? (

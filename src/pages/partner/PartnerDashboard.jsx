@@ -54,7 +54,7 @@ export default function PartnerDashboard() {
   });
 
   return (
-    <div style={pageStyle}>
+    <div style={pageStyle} className="page-padding">
       <div style={shellStyle}>
         <div style={topBar}>
           <div>

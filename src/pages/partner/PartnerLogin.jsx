@@ -28,7 +28,7 @@ export default function PartnerLogin() {
   };
 
   return (
-    <div style={pageStyle}>
+    <div style={pageStyle} className="page-padding">
       <div style={cardStyle}>
         <Link to="/login" style={backLink}>Back to Login As</Link>
           <p style={eyebrow}>Partner / Admin Access</p>
@@ -50,7 +50,7 @@ export default function PartnerLogin() {
 
         <div style={hintBox}>
           <strong>Access notes</strong>
-          <span>Admin login: Abhishekadmin@sathihomecare.in / adminabhishek@123</span>
+          <span>Use administrator-provided employee credentials to sign in.</span>
           <span>Partner accounts are created by admin from the dashboard.</span>
           {partners.length ? <span>Available partner accounts are managed live by admin.</span> : null}
         </div>

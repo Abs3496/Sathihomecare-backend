@@ -1,6 +1,7 @@
 package com.sathihomecare.backend.controller;
 
 import com.sathihomecare.backend.dto.payment.PaymentOrderRequest;
+import com.sathihomecare.backend.dto.payment.PaymentFailureRequest;
 import com.sathihomecare.backend.dto.payment.PaymentResponse;
 import com.sathihomecare.backend.dto.payment.PaymentVerifyRequest;
 import com.sathihomecare.backend.service.PaymentService;
@@ -38,5 +39,13 @@ public class PaymentController {
             @Valid @RequestBody PaymentVerifyRequest request
     ) throws RazorpayException {
         return ResponseEntity.ok(paymentService.verifyPayment(request, userDetails.getUsername()));
+    }
+
+    @PostMapping("/fail")
+    public ResponseEntity<PaymentResponse> markPaymentFailed(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody PaymentFailureRequest request
+    ) {
+        return ResponseEntity.ok(paymentService.markPaymentFailed(request, userDetails.getUsername()));
     }
 }

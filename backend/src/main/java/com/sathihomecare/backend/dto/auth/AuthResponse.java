@@ -1,6 +1,7 @@
 package com.sathihomecare.backend.dto.auth;
 
 import com.sathihomecare.backend.entity.enums.Role;
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,4 +15,5 @@ public class AuthResponse {
     private String phone;
     private Role role;
     private String employeeId;
+    private Instant expiresAt;
 }
