@@ -24,4 +24,6 @@ public class CustomerRegisterRequest {
     @NotBlank
     @Size(min = 8, max = 72, message = "must be between 8 and 72 characters")
     private String password;
+
+    private String role;
 }

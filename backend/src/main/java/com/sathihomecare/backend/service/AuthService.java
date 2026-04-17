@@ -42,7 +42,17 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.CUSTOMER);
+
+        if (request.getRole() == null) {
+            user.setRole(Role.PARTNER);
+        } else {
+            try {
+                user.setRole(Role.valueOf(request.getRole().toUpperCase()));
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid role");
+            }
+        }
+
         User savedUser = userRepository.save(user);
 
         return buildResponse(savedUser, null);
