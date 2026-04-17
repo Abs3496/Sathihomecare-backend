@@ -126,6 +126,27 @@ button:hover {
   .page-padding {
     padding-left: 16px !important;
     padding-right: 16px !important;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+  }
+
+  .home-hero-search-grid,
+  .home-location-grid,
+  .checkout-grid,
+  .founders-grid,
+  .login-shell,
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-hero-search-grid > div,
+  .home-location-grid > div,
+  .card,
+  .bigCard,
+  .gateway-info-card,
+  .partner-card-header,
+  .profile-card-row {
+    width: 100% !important;
   }
 
   .compact-mobile-card {
@@ -135,6 +156,81 @@ button:hover {
 
   .full-mobile-button {
     width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .home-hero-search-grid {
+    align-items: stretch;
+  }
+
+  .home-hero-search-grid > div {
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  .home-hero-search-grid input {
+    min-width: 0;
+  }
+
+  .home-location-grid iframe {
+    min-height: 260px;
+  }
+
+  .summary-column {
+    order: 1 !important;
+    width: 100% !important;
+  }
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.3fr) repeat(auto-fit, minmax(170px, 1fr));
+  gap: 26px;
+}
+
+@media (max-width: 520px) {
+  html {
+    font-size: 15px;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font-size: 1rem !important;
+  }
+
+  .page-padding,
+  .page-section,
+  .page-shell {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .home-hero-search-grid,
+  .home-location-grid,
+  .checkout-grid {
+    gap: 16px !important;
+  }
+
+  .home-hero-search-grid > div {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .home-hero-search-grid > div > button,
+  .home-hero-search-grid > div > .full-mobile-button {
+    width: 100% !important;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .footer-legal-links {
     justify-content: center !important;
   }
 }

@@ -62,7 +62,7 @@ Swagger UI is available at:
 http://localhost:8080/swagger-ui/index.html
 ```
 
-## Demo Accounts
+## Live Account Credentials
 
 - Admin: `Abhishekadmin@sathihomecare.in / adminabhishek@123`
 

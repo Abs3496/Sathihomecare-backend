@@ -10,6 +10,7 @@ const nursing = homepageAssets.serviceIcons.nursing;
 const icu = homepageAssets.serviceIcons.therapy;
 const oldcare = homepageAssets.serviceIcons.consultation;
 const heroNursing = homepageAssets.heroBanner;
+const appLogo = homepageAssets.logo;
 
 const heroCards = [
   { title: "Nursing Services", subtitle: "Certified support at home", offer: "UP TO 30% OFF", image: heroNursing, type: "nursing" },
@@ -172,7 +173,7 @@ export default function Home() {
         <div style={{ maxWidth: "1480px", margin: "0 auto", position: "relative", zIndex: 1 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "#ffffff", color: "#0f8f86", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "22px" }}>S</div>
+              <img src={appLogo} alt="Sathi Homecare" style={{ width: "42px", height: "42px", objectFit: "contain", borderRadius: "12px", background: "#ffffff" }} />
               <span style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff" }}>Sathi Homecare</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "18px", flexWrap: "wrap" }}>
@@ -369,7 +370,7 @@ export default function Home() {
       ) : null}
 
       <footer style={{ marginTop: "52px", background: "#111827", color: "#cbd5e1", padding: "54px 24px 22px" }} className="page-padding">
-        <div style={{ maxWidth: "1480px", margin: "0 auto", display: "grid", gridTemplateColumns: "minmax(260px, 1.3fr) repeat(auto-fit, minmax(170px, 1fr))", gap: "26px" }}>
+        <div className="footer-grid" style={{ maxWidth: "1480px", margin: "0 auto" }}>
           <div style={{ maxWidth: "380px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "#ffffff", color: "#0f8f86", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "22px" }}>S</div>
@@ -383,7 +384,7 @@ export default function Home() {
           <FooterColumn title="Company" items={footerGroups.company} />
           <FooterColumn title="Support" items={footerGroups.support} />
         </div>
-        <div style={{ maxWidth: "1480px", margin: "26px auto 0", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", color: "#94a3b8" }}>
+        <div style={{ maxWidth: "1480px", margin: "26px auto 0", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", color: "#94a3b8" }} className="footer-legal-links">
           <span>Copyright 2026 Sathi Homecare. All rights reserved.</span>
           <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
             <Link to="/privacy-policy" style={footerLegalLink}>Privacy</Link>

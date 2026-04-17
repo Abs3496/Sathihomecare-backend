@@ -4,6 +4,7 @@ import com.sathihomecare.backend.dto.auth.AdminLoginRequest;
 import com.sathihomecare.backend.dto.auth.AuthResponse;
 import com.sathihomecare.backend.dto.auth.CustomerLoginRequest;
 import com.sathihomecare.backend.dto.auth.CustomerRegisterRequest;
+import com.sathihomecare.backend.dto.auth.LoginRequest;
 import com.sathihomecare.backend.dto.auth.PartnerLoginRequest;
 import com.sathihomecare.backend.entity.PartnerProfile;
 import com.sathihomecare.backend.entity.User;
@@ -73,6 +74,24 @@ public class AuthService {
 
         validatePassword(request.getPassword(), user.getPassword());
         return buildResponse(user, null);
+    }
+
+    public AuthResponse login(LoginRequest request) {
+        if (request.getEmployeeId() != null && !request.getEmployeeId().isBlank()) {
+            PartnerLoginRequest partnerRequest = new PartnerLoginRequest();
+            partnerRequest.setEmployeeId(request.getEmployeeId());
+            partnerRequest.setPassword(request.getPassword());
+            return loginPartner(partnerRequest);
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            CustomerLoginRequest customerRequest = new CustomerLoginRequest();
+            customerRequest.setEmailOrPhone(request.getEmail());
+            customerRequest.setPassword(request.getPassword());
+            return loginCustomer(customerRequest);
+        }
+
+        throw new IllegalArgumentException("Either email or employeeId must be provided");
     }
 
     private AuthResponse buildResponse(User user, String employeeId) {

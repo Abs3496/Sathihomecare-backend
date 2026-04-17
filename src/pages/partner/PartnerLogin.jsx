@@ -35,15 +35,31 @@ export default function PartnerLogin() {
           <h1 style={title}>Employee Login</h1>
           <p style={subtitle}>Login using Employee ID and Password provided by admin. Admin can also login here using separate admin credentials.</p>
 
-        <form onSubmit={handleSubmit} style={{ display: "grid", gap: "16px", marginTop: "24px" }}>
-          <label style={labelStyle}>
+        <form id="partnerLoginForm" onSubmit={handleSubmit} style={{ display: "grid", gap: "16px", marginTop: "24px" }}>
+          <label htmlFor="employeeId" style={labelStyle}>
             Employee ID
-            <input value={employeeId} onChange={(event) => setEmployeeId(event.target.value)} style={inputStyle} />
           </label>
-          <label style={labelStyle}>
+          <input
+            id="employeeId"
+            name="employeeId"
+            type="text"
+            value={employeeId}
+            onChange={(event) => setEmployeeId(event.target.value)}
+            style={inputStyle}
+            required
+          />
+          <label htmlFor="partnerPassword" style={labelStyle}>
             Password
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} style={inputStyle} />
           </label>
+          <input
+            id="partnerPassword"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            style={inputStyle}
+            required
+          />
           {error ? <p style={{ margin: 0, color: "#ef4444" }}>{error}</p> : null}
           <button type="submit" style={buttonStyle}>Login to Dashboard</button>
         </form>

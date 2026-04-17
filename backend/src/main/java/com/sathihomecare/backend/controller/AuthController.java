@@ -4,6 +4,7 @@ import com.sathihomecare.backend.dto.auth.AdminLoginRequest;
 import com.sathihomecare.backend.dto.auth.AuthResponse;
 import com.sathihomecare.backend.dto.auth.CustomerLoginRequest;
 import com.sathihomecare.backend.dto.auth.CustomerRegisterRequest;
+import com.sathihomecare.backend.dto.auth.LoginRequest;
 import com.sathihomecare.backend.dto.auth.PartnerLoginRequest;
 import com.sathihomecare.backend.service.AuthService;
 import jakarta.validation.Valid;
@@ -27,6 +28,11 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerCustomer(request));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody CustomerRegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerCustomer(request));
+    }
+
     @PostMapping("/login/customer")
     public ResponseEntity<AuthResponse> loginCustomer(@Valid @RequestBody CustomerLoginRequest request) {
         return ResponseEntity.ok(authService.loginCustomer(request));
@@ -35,6 +41,11 @@ public class AuthController {
     @PostMapping("/login/partner")
     public ResponseEntity<AuthResponse> loginPartner(@Valid @RequestBody PartnerLoginRequest request) {
         return ResponseEntity.ok(authService.loginPartner(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/login/admin")

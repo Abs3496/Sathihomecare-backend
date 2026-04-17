@@ -82,15 +82,15 @@ export default function Login() {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: "grid", gap: "16px", marginTop: "22px" }}>
+          <form id="customerLoginForm" onSubmit={handleSubmit} style={{ display: "grid", gap: "16px", marginTop: "22px" }}>
             {mode === "register" ? (
               <>
-                <Field label="Full Name" value={form.fullName} onChange={(value) => setForm((prev) => ({ ...prev, fullName: value }))} />
-                <Field label="Phone Number" value={form.phone} onChange={(value) => setForm((prev) => ({ ...prev, phone: value }))} />
+                <Field label="Full Name" id="fullName" name="fullName" value={form.fullName} onChange={(value) => setForm((prev) => ({ ...prev, fullName: value }))} />
+                <Field label="Phone Number" id="phone" name="phone" type="tel" value={form.phone} onChange={(value) => setForm((prev) => ({ ...prev, phone: value }))} />
               </>
             ) : null}
-            <Field label="Email Address" value={form.email} onChange={(value) => setForm((prev) => ({ ...prev, email: value }))} />
-            <Field label="Password" type="password" value={form.password} onChange={(value) => setForm((prev) => ({ ...prev, password: value }))} />
+            <Field label="Email Address" id="email" name="email" type="email" value={form.email} onChange={(value) => setForm((prev) => ({ ...prev, email: value }))} />
+            <Field label="Password" id="password" name="password" type="password" value={form.password} onChange={(value) => setForm((prev) => ({ ...prev, password: value }))} />
             {error ? <p style={{ margin: 0, color: "#ef4444" }}>{error}</p> : null}
             <button type="submit" style={buttonStyle}>
               {mode === "login" ? "Continue to User Dashboard" : "Create Account and Continue"}
@@ -102,15 +102,18 @@ export default function Login() {
   );
 }
 
-function Field({ label, type = "text", value, onChange }) {
+function Field({ label, id, name, type = "text", value, onChange }) {
   return (
-    <label style={{ display: "grid", gap: "8px", color: "#334155", fontWeight: 600 }}>
+    <label htmlFor={id} style={{ display: "grid", gap: "8px", color: "#334155", fontWeight: 600 }}>
       {label}
       <input
+        id={id}
+        name={name}
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         style={{ minHeight: "50px", borderRadius: "14px", border: "1px solid #d7e3ef", padding: "0 14px", fontSize: "15px" }}
+        required
       />
     </label>
   );

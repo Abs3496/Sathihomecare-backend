@@ -5,6 +5,7 @@ import com.sathihomecare.backend.dto.auth.CustomerProfileUpdateRequest;
 import com.sathihomecare.backend.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,9 @@ public class CustomerController {
 
     @GetMapping("/me")
     public AuthResponse getCurrentCustomer(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new AuthenticationCredentialsNotFoundException("Authentication required");
+        }
         return profileService.getCurrentCustomer(userDetails.getUsername());
     }
 
@@ -30,6 +34,9 @@ public class CustomerController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CustomerProfileUpdateRequest request
     ) {
+        if (userDetails == null) {
+            throw new AuthenticationCredentialsNotFoundException("Authentication required");
+        }
         return profileService.updateCurrentCustomer(userDetails.getUsername(), request);
     }
 }
