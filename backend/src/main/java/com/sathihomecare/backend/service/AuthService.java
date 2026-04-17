@@ -42,16 +42,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        if (request.getRole() == null) {
-            user.setRole(Role.PARTNER);
-        } else {
-            try {
-                user.setRole(Role.valueOf(request.getRole().toUpperCase()));
-            } catch (Exception e) {
-                throw new RuntimeException("Invalid role");
-            }
-        }
+        user.setRole(resolveRequestedRole(request.getRole()));
 
         User savedUser = userRepository.save(user);
 
@@ -94,14 +85,60 @@ public class AuthService {
             return loginPartner(partnerRequest);
         }
 
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            CustomerLoginRequest customerRequest = new CustomerLoginRequest();
-            customerRequest.setEmailOrPhone(request.getEmail());
-            customerRequest.setPassword(request.getPassword());
-            return loginCustomer(customerRequest);
+        String emailOrPhone = firstNonBlank(request.getEmail(), request.getEmailOrPhone(), request.getUsername());
+        if (emailOrPhone != null && !emailOrPhone.isBlank()) {
+            return loginByEmailOrPhone(emailOrPhone, request.getPassword());
         }
 
         throw new IllegalArgumentException("Either email or employeeId must be provided");
+    }
+
+    private AuthResponse loginByEmailOrPhone(String emailOrPhone, String password) {
+        return userRepository.findByEmail(emailOrPhone)
+                .or(() -> userRepository.findByPhone(emailOrPhone))
+                .map(user -> {
+                    if (user.getRole() == Role.ADMIN) {
+                        AdminLoginRequest adminRequest = new AdminLoginRequest();
+                        adminRequest.setEmailOrPhone(emailOrPhone);
+                        adminRequest.setPassword(password);
+                        return loginAdmin(adminRequest);
+                    }
+
+                    CustomerLoginRequest customerRequest = new CustomerLoginRequest();
+                    customerRequest.setEmailOrPhone(emailOrPhone);
+                    customerRequest.setPassword(password);
+                    return loginCustomer(customerRequest);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private Role resolveRequestedRole(String requestedRole) {
+        if (requestedRole == null || requestedRole.isBlank()) {
+            return Role.CUSTOMER;
+        }
+
+        String normalizedRole = requestedRole.trim().toUpperCase();
+        if ("USER".equals(normalizedRole)) {
+            return Role.CUSTOMER;
+        }
+
+        try {
+            return Role.valueOf(normalizedRole);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Invalid role");
+        }
     }
 
     private AuthResponse buildResponse(User user, String employeeId) {

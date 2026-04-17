@@ -87,6 +87,16 @@ Backend environment values:
 - `RAZORPAY_KEY_SECRET`
 - `JPA_DDL_AUTO`
 - `JPA_SHOW_SQL`
+- `APP_CORS_ALLOWED_ORIGINS`
+- `APP_BOOTSTRAP_ADMIN1_EMAIL`
+- `APP_BOOTSTRAP_ADMIN1_PASSWORD`
+
+## Production DB Note
+
+If the production MySQL database already exists, run these before the next backend deploy:
+
+- [backend/sql/mysql/prod_auth_schema_fix.sql](C:/Users/LENOVO/OneDrive/Desktop/sathi-front/sathi-front/backend/sql/mysql/prod_auth_schema_fix.sql:1)
+- [backend/sql/mysql/prod_diagnostics.sql](C:/Users/LENOVO/OneDrive/Desktop/sathi-front/sathi-front/backend/sql/mysql/prod_diagnostics.sql:1)
 
 ## Current Known Constraints
 

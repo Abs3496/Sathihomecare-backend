@@ -76,6 +76,8 @@ This checklist tracks what is already completed in the product and what still ne
 - [ ] Final frontend env file
 - [ ] Final backend env file
 - [ ] Production database configuration
+- [ ] Run `backend/sql/mysql/prod_auth_schema_fix.sql`
+- [ ] Confirm seeded admin exists after backend boot
 - [ ] Final frontend domain
 - [ ] Final backend domain
 - [ ] HTTPS enabled

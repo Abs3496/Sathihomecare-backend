@@ -8,6 +8,8 @@ import lombok.Setter;
 @Setter
 public class LoginRequest {
     private String email;
+    private String emailOrPhone;
+    private String username;
     private String employeeId;
 
     @NotBlank

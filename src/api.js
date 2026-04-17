@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://sathihomecare-backend.onrender.com/api";
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://sathihomecare-backend.onrender.com/api")
+  .replace(/\/+$/, "");
 
 async function safeJson(response) {
   try {

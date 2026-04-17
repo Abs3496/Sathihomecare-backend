@@ -59,6 +59,36 @@ class BackendIntegrationTest {
     }
 
     @Test
+    void registerTreatsUserRoleAliasAsCustomer() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "fullName", "Alias User",
+                                "email", "alias-user@sathi.com",
+                                "phone", "9234567890",
+                                "password", "secret123",
+                                "role", "user"
+                        ))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.role").value("CUSTOMER"));
+    }
+
+    @Test
+    void registerRejectsUnknownRoleWithBadRequest() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "fullName", "Bad Role User",
+                                "email", "bad-role@sathi.com",
+                                "phone", "9345678901",
+                                "password", "secret123",
+                                "role", "super-admin"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid role"));
+    }
+
+    @Test
     void customerCanUpdateOwnProfile() throws Exception {
         String token = registerCustomerAndReturnToken("profile-user@sathi.com", "9000000011");
 

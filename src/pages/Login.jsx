@@ -82,7 +82,7 @@ export default function Login() {
             </button>
           </div>
 
-          <form id="customerLoginForm" onSubmit={handleSubmit} style={{ display: "grid", gap: "16px", marginTop: "22px" }}>
+          <form id="customerLoginForm" noValidate onSubmit={handleSubmit} style={{ display: "grid", gap: "16px", marginTop: "22px" }}>
             {mode === "register" ? (
               <>
                 <Field label="Full Name" id="fullName" name="fullName" value={form.fullName} onChange={(value) => setForm((prev) => ({ ...prev, fullName: value }))} />

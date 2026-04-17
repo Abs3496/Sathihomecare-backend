@@ -209,9 +209,10 @@ export function AuthProvider({ children }) {
   }, [session.customer?.email, session.token]);
 
   const loginCustomer = async ({ email, password }) => {
+    const identifier = String(email || "").trim();
     const response = await apiFetch("/auth/login/customer", {
       method: "POST",
-      body: JSON.stringify({ emailOrPhone: email, password })
+      body: JSON.stringify({ emailOrPhone: identifier, password })
     });
 
     const customer = {
@@ -226,9 +227,16 @@ export function AuthProvider({ children }) {
   };
 
   const registerCustomer = async ({ fullName, email, phone, password }) => {
+    const payload = {
+      fullName: String(fullName || "").trim(),
+      email: String(email || "").trim(),
+      phone: String(phone || "").trim(),
+      password
+    };
+
     const response = await apiFetch("/auth/register/customer", {
       method: "POST",
-      body: JSON.stringify({ fullName, email, phone, password })
+      body: JSON.stringify(payload)
     });
 
     const customer = {
@@ -243,9 +251,10 @@ export function AuthProvider({ children }) {
   };
 
   const loginPartner = async ({ employeeId, password }) => {
+    const identifier = String(employeeId || "").trim();
     const response = await apiFetch("/auth/login/partner", {
       method: "POST",
-      body: JSON.stringify({ employeeId, password })
+      body: JSON.stringify({ employeeId: identifier, password })
     });
 
     const partner = {
@@ -261,9 +270,10 @@ export function AuthProvider({ children }) {
   };
 
   const loginAdmin = async ({ username, password }) => {
+    const identifier = String(username || "").trim();
     const response = await apiFetch("/auth/login/admin", {
       method: "POST",
-      body: JSON.stringify({ emailOrPhone: username, password })
+      body: JSON.stringify({ emailOrPhone: identifier, password })
     });
 
     const admin = {
