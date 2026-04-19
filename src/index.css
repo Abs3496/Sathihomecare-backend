@@ -128,15 +128,15 @@ textarea {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(180px, 1fr));
   gap: 26px;
   align-items: start;
   justify-items: start;
 }
 
 .footer-brand {
-  justify-self: start;
-  max-width: none;
+  justify-self: stretch;
+  max-width: 100%;
 }
 
 .footer-legal-links {
@@ -421,15 +421,15 @@ button:hover {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(180px, 1fr));
   gap: 26px;
   align-items: start;
   justify-items: start;
 }
 
 .footer-brand {
-  justify-self: start;
-  max-width: none;
+  justify-self: stretch;
+  max-width: 100%;
 }
 
 .footer-legal-links {
