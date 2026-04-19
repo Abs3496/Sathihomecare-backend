@@ -25,3 +25,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Maven and backend build artifacts
+backend/target/
+backend/.m2repo/
+*.class
+*.jar
+*.war
