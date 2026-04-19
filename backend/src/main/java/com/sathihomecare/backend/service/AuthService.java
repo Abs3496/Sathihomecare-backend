@@ -103,6 +103,21 @@ public class AuthService {
         throw new IllegalArgumentException("Either email or employeeId must be provided");
     }
 
+    public AuthResponse refresh(String username) {
+        String identifier = normalizeIdentifier(username);
+        User user = userRepository.findByEmailIgnoreCase(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        validateUserIsActive(user);
+
+        String employeeId = partnerProfileRepository.findByUser(user)
+                .map(PartnerProfile::getEmployeeId)
+                .orElse(null);
+
+        return buildResponse(user, employeeId);
+    }
+
     private AuthResponse loginByEmailOrPhone(String emailOrPhone, String password) {
         String identifier = normalizeIdentifier(emailOrPhone);
         return userRepository.findByEmailIgnoreCase(identifier)
