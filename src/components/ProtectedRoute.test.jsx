@@ -32,7 +32,7 @@ function renderProtectedRoute(role) {
 
 describe("ProtectedRoute", () => {
   it("redirects logged-out customers to login", () => {
-    mockUseAuth.mockReturnValue({ customer: null, partner: null, admin: null });
+    mockUseAuth.mockReturnValue({ customer: null, partner: null, admin: null, token: null });
 
     renderProtectedRoute("customer");
 
@@ -40,7 +40,7 @@ describe("ProtectedRoute", () => {
   });
 
   it("redirects logged-out partners to partner login", () => {
-    mockUseAuth.mockReturnValue({ customer: null, partner: null, admin: null });
+    mockUseAuth.mockReturnValue({ customer: null, partner: null, admin: null, token: null });
 
     renderProtectedRoute("partner");
 
@@ -48,7 +48,7 @@ describe("ProtectedRoute", () => {
   });
 
   it("redirects logged-out admins to admin login", () => {
-    mockUseAuth.mockReturnValue({ customer: null, partner: null, admin: null });
+    mockUseAuth.mockReturnValue({ customer: null, partner: null, admin: null, token: null });
 
     renderProtectedRoute("admin");
 
@@ -56,7 +56,7 @@ describe("ProtectedRoute", () => {
   });
 
   it("renders children when role is authenticated", () => {
-    mockUseAuth.mockReturnValue({ customer: { name: "Asha" }, partner: null, admin: null });
+    mockUseAuth.mockReturnValue({ customer: { name: "Asha" }, partner: null, admin: null, token: "test-token" });
 
     renderProtectedRoute("customer");
 

@@ -11,6 +11,7 @@ import KnowFounders from "./pages/KnowFounders";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsConditions from "./pages/legal/TermsConditions";
 import RefundPolicy from "./pages/legal/RefundPolicy";
+import Blogs from "./pages/Blogs";
 import CartBar from "./components/CartBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -25,6 +26,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/partner/login" element={<PartnerLogin />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/blogs" element={<Blogs />} />
         <Route path="/founders" element={<KnowFounders />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

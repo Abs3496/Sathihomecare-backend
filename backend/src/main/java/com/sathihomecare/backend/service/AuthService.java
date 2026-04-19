@@ -30,19 +30,24 @@ public class AuthService {
     private final JwtService jwtService;
 
     public AuthResponse registerCustomer(CustomerRegisterRequest request) {
-        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+        String email = normalizeEmail(request.getEmail());
+        String phone = normalizePhone(request.getPhone());
+
+        validateRequestedRole(request.getRole());
+
+        userRepository.findByEmailIgnoreCase(email).ifPresent(user -> {
             throw new IllegalArgumentException("Email already registered");
         });
-        userRepository.findByPhone(request.getPhone()).ifPresent(user -> {
+        userRepository.findByPhone(phone).ifPresent(user -> {
             throw new IllegalArgumentException("Phone already registered");
         });
 
         User user = new User();
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
+        user.setFullName(request.getFullName().trim());
+        user.setEmail(email);
+        user.setPhone(phone);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(resolveRequestedRole(request.getRole()));
+        user.setRole(Role.CUSTOMER);
 
         User savedUser = userRepository.save(user);
 
@@ -50,30 +55,35 @@ public class AuthService {
     }
 
     public AuthResponse loginCustomer(CustomerLoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmailOrPhone())
-                .or(() -> userRepository.findByPhone(request.getEmailOrPhone()))
+        String identifier = normalizeIdentifier(request.getEmailOrPhone());
+        User user = userRepository.findByEmailIgnoreCase(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
                 .filter(found -> found.getRole() == Role.CUSTOMER)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
         validatePassword(request.getPassword(), user.getPassword());
+        validateUserIsActive(user);
         return buildResponse(user, null);
     }
 
     public AuthResponse loginPartner(PartnerLoginRequest request) {
-        PartnerProfile profile = partnerProfileRepository.findByEmployeeId(request.getEmployeeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
+        PartnerProfile profile = partnerProfileRepository.findByEmployeeId(request.getEmployeeId().trim())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
         validatePassword(request.getPassword(), profile.getUser().getPassword());
+        validateUserIsActive(profile.getUser());
         return buildResponse(profile.getUser(), profile.getEmployeeId());
     }
 
     public AuthResponse loginAdmin(AdminLoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmailOrPhone())
-                .or(() -> userRepository.findByPhone(request.getEmailOrPhone()))
+        String identifier = normalizeIdentifier(request.getEmailOrPhone());
+        User user = userRepository.findByEmailIgnoreCase(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
                 .filter(found -> found.getRole() == Role.ADMIN)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
         validatePassword(request.getPassword(), user.getPassword());
+        validateUserIsActive(user);
         return buildResponse(user, null);
     }
 
@@ -94,22 +104,23 @@ public class AuthService {
     }
 
     private AuthResponse loginByEmailOrPhone(String emailOrPhone, String password) {
-        return userRepository.findByEmail(emailOrPhone)
-                .or(() -> userRepository.findByPhone(emailOrPhone))
+        String identifier = normalizeIdentifier(emailOrPhone);
+        return userRepository.findByEmailIgnoreCase(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
                 .map(user -> {
                     if (user.getRole() == Role.ADMIN) {
                         AdminLoginRequest adminRequest = new AdminLoginRequest();
-                        adminRequest.setEmailOrPhone(emailOrPhone);
+                        adminRequest.setEmailOrPhone(identifier);
                         adminRequest.setPassword(password);
                         return loginAdmin(adminRequest);
                     }
 
                     CustomerLoginRequest customerRequest = new CustomerLoginRequest();
-                    customerRequest.setEmailOrPhone(emailOrPhone);
+                    customerRequest.setEmailOrPhone(identifier);
                     customerRequest.setPassword(password);
                     return loginCustomer(customerRequest);
                 })
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
     }
 
     private static String firstNonBlank(String... values) {
@@ -122,23 +133,6 @@ public class AuthService {
             }
         }
         return null;
-    }
-
-    private Role resolveRequestedRole(String requestedRole) {
-        if (requestedRole == null || requestedRole.isBlank()) {
-            return Role.CUSTOMER;
-        }
-
-        String normalizedRole = requestedRole.trim().toUpperCase();
-        if ("USER".equals(normalizedRole)) {
-            return Role.CUSTOMER;
-        }
-
-        try {
-            return Role.valueOf(normalizedRole);
-        } catch (IllegalArgumentException exception) {
-            throw new IllegalArgumentException("Invalid role");
-        }
     }
 
     private AuthResponse buildResponse(User user, String employeeId) {
@@ -163,5 +157,37 @@ public class AuthService {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new IllegalArgumentException("Invalid credentials");
         }
+    }
+
+    private void validateRequestedRole(String requestedRole) {
+        if (requestedRole == null || requestedRole.isBlank()) {
+            return;
+        }
+
+        String normalized = requestedRole.trim().toUpperCase();
+        if ("USER".equals(normalized) || "CUSTOMER".equals(normalized)) {
+            return;
+        }
+
+        throw new IllegalArgumentException("Invalid role");
+    }
+
+    private void validateUserIsActive(User user) {
+        if (!user.isActive()) {
+            throw new IllegalArgumentException("Account is inactive");
+        }
+    }
+
+    private String normalizeIdentifier(String value) {
+        String trimmed = value == null ? "" : value.trim();
+        return trimmed.contains("@") ? trimmed.toLowerCase() : trimmed;
+    }
+
+    private String normalizeEmail(String value) {
+        return normalizeIdentifier(value);
+    }
+
+    private String normalizePhone(String value) {
+        return value == null ? "" : value.trim();
     }
 }

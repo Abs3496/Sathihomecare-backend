@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { serviceAssets } from "../assets";
+import { homepageAssets, serviceAssets } from "../assets";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { servicesData } from "../data/servicesData";
 import { apiFetch } from "../api";
@@ -36,7 +36,10 @@ const serviceImages = {
 export default function Services() {
   usePageSeo({
     title: "Services | Sathi Homecare",
-    description: "Browse Sathi Homecare nursing, ayurvedic therapy and counselling services with responsive booking-ready cards and current pricing."
+    description: "Browse Sathi Homecare nursing, ayurvedic therapy and counselling services with responsive booking-ready cards and current pricing.",
+    keywords: "home nursing services, ayurvedic therapy, counselling services, patient care booking",
+    canonicalPath: "/services",
+    image: serviceAssets.nursing
   });
 
   const [searchParams] = useSearchParams();
@@ -49,27 +52,47 @@ export default function Services() {
   const searchQuery = (searchParams.get("q") || "").trim().toLowerCase();
   const location = (searchParams.get("location") || "").trim();
 
-  const servicesSource = backendServices.length ? backendServices : Object.entries(servicesData).flatMap(([type, items]) =>
+  const localServices = useMemo(() => Object.entries(servicesData).flatMap(([type, items]) =>
     items.map((item) => ({ ...item, type }))
-  );
+  ), []);
+
+  const servicesSource = useMemo(() => mergeServices(localServices, backendServices), [backendServices, localServices]);
 
   useEffect(() => {
     let active = true;
+    const cacheKey = "sathi-services-cache-v1";
+    const cacheTtlMs = 1000 * 60 * 5;
+
+    try {
+      const rawCache = sessionStorage.getItem(cacheKey);
+      if (rawCache) {
+        const parsed = JSON.parse(rawCache);
+        if (parsed?.savedAt && Date.now() - parsed.savedAt < cacheTtlMs && Array.isArray(parsed.items)) {
+          setBackendServices(parsed.items);
+          setLoadingServices(false);
+        }
+      }
+    } catch {
+      sessionStorage.removeItem(cacheKey);
+    }
 
     const loadServices = async () => {
       try {
         const services = await apiFetch("/services");
         if (!active) return;
-        setBackendServices(
-          services.map((service) => ({
+        const normalized = services.map((service) => ({
             id: service.id,
             name: service.name,
             desc: service.description,
             price: Number(service.price),
             type: serviceCategoryMap[service.category] || service.category?.toLowerCase() || "all",
             image: serviceImages[serviceCategoryMap[service.category]?.toLowerCase()] || serviceImages.default
-          }))
-        );
+          }));
+        setBackendServices(normalized);
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          savedAt: Date.now(),
+          items: normalized
+        }));
       } catch (error) {
         if (!active) return;
         setServiceError(error?.message || "Unable to load services from backend.");
@@ -100,7 +123,12 @@ export default function Services() {
       <section style={{ background: "linear-gradient(135deg, #0a2440, #0d594f)", padding: "48px 24px" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
           <p style={{ margin: 0, color: "#8de3d4", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, fontSize: "13px" }}>Service catalogue</p>
-          <h1 style={{ margin: "12px 0 0", color: "#ffffff", fontSize: "clamp(2.2rem, 4vw, 3.5rem)" }}>{categoryLabels[selectedType] || "Services"}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap", marginTop: "12px" }}>
+            <div style={brandMarkShell}>
+              <img src={homepageAssets.logo} alt="Sathi Homecare logo" style={brandMarkImage} />
+            </div>
+            <h1 style={{ margin: 0, color: "#ffffff", fontSize: "clamp(2.2rem, 4vw, 3.5rem)" }}>{categoryLabels[selectedType] || "Services"}</h1>
+          </div>
           <p style={{ margin: "12px 0 0", color: "rgba(255,255,255,0.84)", maxWidth: "760px", lineHeight: 1.7 }}>
             {categoryDescriptions[selectedType] || categoryDescriptions.all}
           </p>
@@ -154,7 +182,7 @@ export default function Services() {
               return (
                 <article key={`${item.type}-${item.id}`} style={{ background: "#ffffff", borderRadius: "24px", overflow: "hidden", boxShadow: "0 18px 42px rgba(15, 23, 42, 0.08)", border: "1px solid #eef2f7", display: "flex", flexDirection: "column" }}>
                   <div style={{ position: "relative", height: "220px", background: "linear-gradient(145deg, #effcf8, #e0f2fe)" }}>
-                    <img src={item.image} alt={item.name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", padding: "24px" }} />
+                    <img src={item.image} alt={item.name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "contain", padding: "24px" }} />
                     <div style={{ position: "absolute", top: "14px", left: "14px", background: "#1cb5ac", color: "#ffffff", padding: "6px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 700 }}>
                       {categoryLabels[item.type]}
                     </div>
@@ -167,6 +195,12 @@ export default function Services() {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", marginTop: "18px" }}>
                       <span style={{ color: "#0f8f86", fontWeight: 800, fontSize: "20px" }}>Rs. {item.price}</span>
                       <span style={{ color: "#667085", textTransform: "capitalize", fontSize: "14px" }}>{item.type}</span>
+                    </div>
+                    <div style={{ marginTop: "8px", display: "flex", justifyContent: "space-between", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={{ color: "#64748b", fontSize: "13px", fontWeight: 700 }}>Starting from ₹499</span>
+                      <Link to={buildServicesPath({ type: item.type, query: item.name, location })} style={{ textDecoration: "none", color: "#102542", fontWeight: 700, fontSize: "13px" }}>
+                        View Details
+                      </Link>
                     </div>
 
                     <div style={{ display: "flex", gap: "10px", marginTop: "18px" }}>
@@ -200,6 +234,43 @@ export default function Services() {
   );
 }
 
+function mergeServices(localServices, backendServices) {
+  if (!backendServices.length) return localServices;
+
+  const merged = [...localServices];
+  const indexByKey = new Map();
+
+  merged.forEach((service, index) => {
+    indexByKey.set(getServiceMatchKey(service), index);
+  });
+
+  backendServices.forEach((service) => {
+    const key = getServiceMatchKey(service);
+    const existingIndex = indexByKey.get(key);
+
+    if (existingIndex === undefined) {
+      indexByKey.set(key, merged.length);
+      merged.push(service);
+      return;
+    }
+
+    merged[existingIndex] = {
+      ...merged[existingIndex],
+      ...service,
+      name: service.name || merged[existingIndex].name,
+      desc: service.desc || merged[existingIndex].desc,
+      price: service.price || merged[existingIndex].price,
+      image: service.image || merged[existingIndex].image
+    };
+  });
+
+  return merged;
+}
+
+function getServiceMatchKey(service) {
+  return `${service.type || "all"}::${String(service.name || "").trim().toLowerCase()}`;
+}
+
 function buildServicesPath({ type = "all", query = "", location = "" }) {
   const params = new URLSearchParams();
   if (type && type !== "all") params.set("type", type);
@@ -226,4 +297,21 @@ const qtyButtonStyle = {
   color: "#102542",
   cursor: "pointer",
   fontWeight: 700
+};
+
+const brandMarkShell = {
+  width: "54px",
+  height: "54px",
+  borderRadius: "16px",
+  overflow: "hidden",
+  background: "#ffffff",
+  boxShadow: "0 10px 24px rgba(0,0,0,0.12)",
+  flexShrink: 0
+};
+
+const brandMarkImage = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  transform: "scale(1.22)"
 };

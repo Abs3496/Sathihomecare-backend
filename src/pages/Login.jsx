@@ -13,9 +13,11 @@ export default function Login() {
     password: ""
   });
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
     if (mode === "login" && (!form.email || !form.password)) {
       setError("Please enter both email and password.");
       return;
@@ -27,9 +29,13 @@ export default function Login() {
     }
 
     try {
+      setIsSubmitting(true);
       if (mode === "login") {
         await loginCustomer(form);
       } else {
+        if (!/^\d{10}$/.test(form.phone.trim())) {
+          throw new Error("Please enter a valid 10 digit phone number.");
+        }
         await registerCustomer(form);
       }
       navigate("/user/dashboard");
@@ -37,6 +43,8 @@ export default function Login() {
       setError(err?.message || (mode === "login"
         ? "Unable to login. Please check your credentials."
         : "Unable to create account right now."));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,8 +100,8 @@ export default function Login() {
             <Field label="Email Address" id="email" name="email" type="email" value={form.email} onChange={(value) => setForm((prev) => ({ ...prev, email: value }))} />
             <Field label="Password" id="password" name="password" type="password" value={form.password} onChange={(value) => setForm((prev) => ({ ...prev, password: value }))} />
             {error ? <p style={{ margin: 0, color: "#ef4444" }}>{error}</p> : null}
-            <button type="submit" style={buttonStyle}>
-              {mode === "login" ? "Continue to User Dashboard" : "Create Account and Continue"}
+            <button type="submit" style={buttonStyle} disabled={isSubmitting}>
+              {isSubmitting ? "Please wait..." : mode === "login" ? "Continue to User Dashboard" : "Create Account and Continue"}
             </button>
           </form>
         </div>

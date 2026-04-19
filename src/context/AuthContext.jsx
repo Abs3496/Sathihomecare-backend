@@ -120,6 +120,7 @@ export function AuthProvider({ children }) {
 
   const [bookings, setBookings] = useState([]);
   const [services, setServices] = useState([]);
+  const [attendance, setAttendance] = useState([]);
 
   useEffect(() => {
     if (session?.token) {
@@ -142,6 +143,7 @@ export function AuthProvider({ children }) {
     if (isTokenExpired(session.token)) {
       setSession(defaultSession);
       setBookings([]);
+      setAttendance([]);
       setIsSessionReady(true);
       return undefined;
     }
@@ -153,6 +155,7 @@ export function AuthProvider({ children }) {
     const timeoutId = window.setTimeout(() => {
       setSession(defaultSession);
       setBookings([]);
+      setAttendance([]);
     }, Math.max(0, expiry - Date.now()));
 
     return () => window.clearTimeout(timeoutId);
@@ -223,6 +226,7 @@ export function AuthProvider({ children }) {
     };
 
     setSession({ token: response.token, customer, partner: null, admin: null });
+    setAttendance([]);
     return customer;
   };
 
@@ -247,6 +251,7 @@ export function AuthProvider({ children }) {
     };
 
     setSession({ token: response.token, customer, partner: null, admin: null });
+    setAttendance([]);
     return customer;
   };
 
@@ -266,6 +271,8 @@ export function AuthProvider({ children }) {
     };
 
     setSession({ token: response.token, customer: null, partner, admin: null });
+    setBookings([]);
+    setAttendance([]);
     return partner;
   };
 
@@ -284,12 +291,15 @@ export function AuthProvider({ children }) {
     };
 
     setSession({ token: response.token, customer: null, partner: null, admin });
+    setBookings([]);
+    setAttendance([]);
     return admin;
   };
 
   const logout = () => {
     setSession(defaultSession);
     setBookings([]);
+    setAttendance([]);
     localStorage.removeItem(STORAGE_KEY);
   };
 
@@ -553,6 +563,14 @@ export function AuthProvider({ children }) {
     return normalized;
   };
 
+  const fetchAdminAttendance = useCallback(async (token = session.token) => {
+    if (!token) return [];
+
+    const response = await authFetch(token, "/admin/attendance");
+    setAttendance(response);
+    return response;
+  }, [session.token]);
+
   const fetchCurrentPartnerProfile = useCallback(async (token = session.token) => {
     if (!token) return null;
 
@@ -564,6 +582,23 @@ export function AuthProvider({ children }) {
         ...(prev.partner || {}),
         ...normalized
       }
+    }));
+    return normalized;
+  }, [session.token]);
+
+  const fetchCustomerProfile = useCallback(async (token = session.token) => {
+    if (!token) return null;
+
+    const response = await authFetch(token, "/customer/me");
+    const normalized = {
+      id: response.userId,
+      name: response.fullName,
+      email: response.email,
+      phone: response.phone
+    };
+    setSession((prev) => ({
+      ...prev,
+      customer: normalized
     }));
     return normalized;
   }, [session.token]);
@@ -589,6 +624,27 @@ export function AuthProvider({ children }) {
     const normalized = normalizeBooking(response);
     setBookings((prev) => prev.map((booking) => (booking.id === bookingId ? normalized : booking)));
     return normalized;
+  };
+
+  const fetchPartnerAttendance = useCallback(async (token = session.token) => {
+    if (!token) return [];
+
+    const response = await authFetch(token, "/partner/attendance");
+    setAttendance(response);
+    return response;
+  }, [session.token]);
+
+  const markPartnerAttendance = async (action) => {
+    if (!session.token) {
+      throw new Error("Please login as partner before updating attendance.");
+    }
+
+    const endpoint = action === "out" ? "/partner/attendance/check-out" : "/partner/attendance/check-in";
+    const response = await authFetch(session.token, endpoint, {
+      method: "POST"
+    });
+    await fetchPartnerAttendance(session.token);
+    return response;
   };
 
   const createPaymentOrder = async (bookingId) => {
@@ -728,12 +784,14 @@ export function AuthProvider({ children }) {
     partners,
     bookings,
     services,
+    attendance,
     loginCustomer,
     registerCustomer,
     loginPartner,
     loginAdmin,
     logout,
     updateCustomerProfile,
+    fetchCustomerProfile,
     addBooking,
     createPaymentOrder,
     verifyPayment,
@@ -749,9 +807,12 @@ export function AuthProvider({ children }) {
     deleteAdminService,
     assignAdminBooking,
     updateAdminBookingStatus,
+    fetchAdminAttendance,
     fetchCurrentPartnerProfile,
     fetchPartnerBookings,
     updatePartnerBookingStatus,
+    fetchPartnerAttendance,
+    markPartnerAttendance,
     updateBookingStatus,
     assignBooking,
     cancelBooking,

@@ -71,13 +71,13 @@ public class ProfileService {
     }
 
     private User findUser(String username) {
-        return userRepository.findByEmail(username)
+        return userRepository.findByEmailIgnoreCase(username)
                 .or(() -> userRepository.findByPhone(username))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     private void validateUniqueCustomerContact(User currentUser, String email, String phone) {
-        userRepository.findByEmail(email)
+        userRepository.findByEmailIgnoreCase(email)
                 .filter(found -> !found.getId().equals(currentUser.getId()))
                 .ifPresent(found -> {
                     throw new IllegalArgumentException("Email already registered");

@@ -11,8 +11,7 @@ const founders = [
       "Software Engineer",
       "Handles product, tech and platform vision"
     ],
-    image: founderAssets.abhishek,
-    imageNote: "Production note: replace this placeholder with /assets/images/founders/abhishek.jpg when the final portrait is available."
+    image: founderAssets.abhishek
   },
   {
     key: "dharmendra",
@@ -22,8 +21,7 @@ const founders = [
       "Professional Ayurvedic Therapist",
       "10+ years experience"
     ],
-    image: founderAssets.dharmendra,
-    imageNote: "Production note: replace this placeholder with /assets/images/founders/dharmendra.jpg when the final portrait is available."
+    image: founderAssets.dharmendra
   },
   {
     key: "pinku",
@@ -33,8 +31,7 @@ const founders = [
       "Nursing Expert",
       "5+ years experience"
     ],
-    image: founderAssets.pinku,
-    imageNote: "Production note: replace this placeholder with /assets/images/founders/pinku.jpg when the final portrait is available."
+    image: founderAssets.pinku
   }
 ];
 
@@ -49,7 +46,12 @@ export default function KnowFounders() {
       <section style={heroStyle} className="compact-mobile-card">
         <div style={heroCopy}>
           <p style={eyebrow}>Know The Founders</p>
-          <h1 style={title}>The leadership team building a trusted homecare experience</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap", marginTop: "12px" }}>
+            <div style={brandLogoShell}>
+              <img src={iconAssets.careHeart} alt="Sathi Homecare logo" style={brandLogoImage} />
+            </div>
+            <h1 style={{ ...title, margin: 0 }}>The leadership team building a trusted homecare experience</h1>
+          </div>
           <p style={subtitle}>
             Sathi Homecare is being built for families who need dependable support, clear coordination, and a premium service experience from discovery to care delivery.
           </p>
@@ -70,19 +72,26 @@ export default function KnowFounders() {
       </section>
 
       <section style={sectionStyle}>
-        <div style={sectionHeader}>
+        <div style={sectionHeader} className="founders-header-grid">
           <div>
             <p style={eyebrowSecondary}>Founding team</p>
             <h2 style={sectionTitle}>Card-based profiles with a cleaner launch-ready presentation</h2>
           </div>
           <p style={sectionText}>
-            Each card is responsive, premium-styled, and ready to swap from placeholder art to real founder portraits without changing layout structure.
+            Each founder card keeps the launch layout clean while clearly explaining leadership, operations, and service expertise behind Sathi Homecare.
           </p>
         </div>
 
         <div style={gridStyle} className="founders-grid">
-          {founders.map((founder) => (
-            <article key={founder.key} style={cardStyle} className="compact-mobile-card">
+          {founders.map((founder, index) => (
+            <article
+              key={founder.key}
+              style={{
+                ...cardStyle,
+                ...(index === 0 ? featuredFounderCard : {})
+              }}
+              className="compact-mobile-card"
+            >
               <div style={imageWrap}>
                 <img src={founder.image} alt={`${founder.name} portrait placeholder`} loading="lazy" style={imageStyle} />
               </div>
@@ -94,7 +103,9 @@ export default function KnowFounders() {
                     <p key={line} style={summaryItem}>{line}</p>
                   ))}
                 </div>
-                <p style={noteStyle}>{founder.imageNote}</p>
+                <p style={noteStyle}>
+                  {founder.name} helps shape a care journey that is dependable, human, and better coordinated for families booking services online.
+                </p>
               </div>
             </article>
           ))}
@@ -174,7 +185,6 @@ const eyebrowSecondary = {
 };
 
 const title = {
-  margin: "12px 0 0",
   fontSize: "clamp(2.2rem, 4vw, 4rem)",
   lineHeight: 1.08
 };
@@ -240,7 +250,7 @@ const sectionText = {
 
 const gridStyle = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+  gridTemplateColumns: "repeat(2, minmax(280px, 1fr))",
   gap: "22px",
   marginTop: "24px"
 };
@@ -324,4 +334,25 @@ const missionText = {
   color: "#475569",
   lineHeight: 1.8,
   maxWidth: "840px"
+};
+
+const brandLogoShell = {
+  width: "60px",
+  height: "60px",
+  borderRadius: "18px",
+  overflow: "hidden",
+  background: "#ffffff",
+  boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
+  flexShrink: 0
+};
+
+const brandLogoImage = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  transform: "scale(1.22)"
+};
+
+const featuredFounderCard = {
+  gridColumn: "1 / -1"
 };

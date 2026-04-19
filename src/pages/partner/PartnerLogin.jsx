@@ -16,6 +16,12 @@ export default function PartnerLogin() {
     setError("");
     setIsSubmitting(true);
 
+    if (!identifier.trim() || !password.trim()) {
+      setError(mode === "admin" ? "Enter admin email/phone and password." : "Enter employee ID and password.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       if (mode === "admin") {
         await loginAdmin({ username: identifier, password });

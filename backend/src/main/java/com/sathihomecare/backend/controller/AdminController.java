@@ -1,5 +1,6 @@
 package com.sathihomecare.backend.controller;
 
+import com.sathihomecare.backend.dto.partner.AttendanceResponse;
 import com.sathihomecare.backend.dto.booking.BookingResponse;
 import com.sathihomecare.backend.dto.partner.PartnerCreateRequest;
 import com.sathihomecare.backend.dto.partner.PartnerSummaryResponse;
@@ -7,6 +8,7 @@ import com.sathihomecare.backend.dto.partner.PartnerUpdateRequest;
 import com.sathihomecare.backend.dto.service.ServiceRequest;
 import com.sathihomecare.backend.dto.service.ServiceResponse;
 import com.sathihomecare.backend.entity.enums.BookingStatus;
+import com.sathihomecare.backend.service.AttendanceService;
 import com.sathihomecare.backend.service.BookingService;
 import com.sathihomecare.backend.service.PartnerManagementService;
 import com.sathihomecare.backend.service.ServiceCatalogService;
@@ -33,6 +35,7 @@ public class AdminController {
     private final BookingService bookingService;
     private final PartnerManagementService partnerManagementService;
     private final ServiceCatalogService serviceCatalogService;
+    private final AttendanceService attendanceService;
 
     @GetMapping("/bookings")
     public List<BookingResponse> getAllBookings() {
@@ -58,6 +61,11 @@ public class AdminController {
     @GetMapping("/partners")
     public List<PartnerSummaryResponse> getPartners() {
         return partnerManagementService.getAllPartners();
+    }
+
+    @GetMapping("/attendance")
+    public List<AttendanceResponse> getAttendance() {
+        return attendanceService.getAllAttendance();
     }
 
     @PostMapping("/partners")

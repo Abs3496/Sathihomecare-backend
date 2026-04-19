@@ -182,7 +182,7 @@ public class BookingService {
     }
 
     private User getUserByUsername(String username) {
-        return userRepository.findByEmail(username)
+        return userRepository.findByEmailIgnoreCase(username)
                 .or(() -> userRepository.findByPhone(username))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }

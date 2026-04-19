@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePageSeo } from "../../hooks/usePageSeo";
 import BookingCard from "../../components/BookingCard";
 import { useAuth } from "../../hooks/useAuth";
@@ -11,7 +11,7 @@ export default function UserDashboard() {
     description: "Manage your Sathi Homecare profile, track bookings and retry secure payments from your customer dashboard."
   });
 
-  const { customer, bookings, cancelBooking, logout, updateCustomerProfile, createPaymentOrder, verifyPayment, markPaymentFailed } = useAuth();
+  const { customer, bookings, cancelBooking, logout, updateCustomerProfile, createPaymentOrder, verifyPayment, markPaymentFailed, fetchCustomerProfile } = useAuth();
   const [profileForm, setProfileForm] = useState({
     fullName: customer?.name || "",
     email: customer?.email || "",
@@ -24,10 +24,21 @@ export default function UserDashboard() {
   const [payingBookingId, setPayingBookingId] = useState(null);
   const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || "";
 
+  useEffect(() => {
+    fetchCustomerProfile().catch(() => {});
+  }, [fetchCustomerProfile]);
+
   const myBookings = bookings.filter(
     (booking) =>
       booking.customerEmail === customer?.email || booking.customer === customer?.name
   );
+
+  const bookingStats = useMemo(() => ({
+    total: myBookings.length,
+    active: myBookings.filter((booking) => ["Assigned", "Accepted", "In Progress"].includes(booking.status)).length,
+    completed: myBookings.filter((booking) => booking.status === "Completed").length,
+    pendingPayment: myBookings.filter((booking) => booking.paymentStatus === "PENDING").length
+  }), [myBookings]);
 
   const handleProfileSave = async (event) => {
     event.preventDefault();
@@ -97,6 +108,13 @@ export default function UserDashboard() {
           </div>
         </section>
 
+        <section style={statsGrid}>
+          <DashboardMetric label="Total Bookings" value={bookingStats.total} />
+          <DashboardMetric label="Active Care Requests" value={bookingStats.active} />
+          <DashboardMetric label="Completed Services" value={bookingStats.completed} />
+          <DashboardMetric label="Pending Payments" value={bookingStats.pendingPayment} />
+        </section>
+
         <section style={profileEditor}>
           <div>
             <h2 style={{ margin: 0, fontSize: "28px", color: "#102542" }}>Profile Settings</h2>
@@ -134,6 +152,22 @@ export default function UserDashboard() {
           </form>
         </section>
 
+        <section style={profileEditor}>
+          <h2 style={{ margin: 0, fontSize: "28px", color: "#102542" }}>Account Safety</h2>
+          <p style={{ margin: "10px 0 0", color: "#667085", lineHeight: 1.7 }}>
+            Your dashboard works only with authenticated access. Keep your mobile number and email updated so booking and payment verification stays secure.
+          </p>
+          <div style={{ display: "grid", gap: "10px", marginTop: "18px" }}>
+            {[
+              "JWT-based authenticated booking access is active.",
+              "Cancelled and paid bookings are refreshed directly from secure backend APIs.",
+              "Use only your registered number/email while contacting support."
+            ].map((tip) => (
+              <div key={tip} style={safetyTip}>{tip}</div>
+            ))}
+          </div>
+        </section>
+
         <section style={{ marginTop: "26px" }}>
           <h2 style={{ margin: 0, fontSize: "30px", color: "#102542" }}>My Bookings</h2>
           <p style={{ margin: "10px 0 0", color: "#667085" }}>Track your bookings, status, and cancel if needed.</p>
@@ -162,6 +196,15 @@ export default function UserDashboard() {
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+function DashboardMetric({ label, value }) {
+  return (
+    <div style={metricCard}>
+      <p style={{ margin: 0, color: "#667085", fontSize: "13px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</p>
+      <h3 style={{ margin: "10px 0 0", color: "#102542", fontSize: "32px" }}>{value}</h3>
     </div>
   );
 }
@@ -294,6 +337,28 @@ const saveButton = {
   borderRadius: "14px",
   fontWeight: 700,
   cursor: "pointer"
+};
+
+const statsGrid = {
+  marginTop: "22px",
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gap: "16px"
+};
+
+const metricCard = {
+  background: "#ffffff",
+  borderRadius: "22px",
+  padding: "20px",
+  boxShadow: "0 18px 42px rgba(15, 23, 42, 0.08)"
+};
+
+const safetyTip = {
+  background: "#f8fbff",
+  borderRadius: "16px",
+  padding: "14px 16px",
+  color: "#475569",
+  border: "1px solid #d7e3ef"
 };
 
 const paymentSuccess = {

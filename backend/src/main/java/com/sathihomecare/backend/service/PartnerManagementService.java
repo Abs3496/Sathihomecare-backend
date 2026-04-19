@@ -35,7 +35,7 @@ public class PartnerManagementService {
 
     @Transactional
     public PartnerSummaryResponse createPartner(PartnerCreateRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already in use");
         }
         if (userRepository.findByPhone(request.getPhone()).isPresent()) {
@@ -75,7 +75,7 @@ public class PartnerManagementService {
         PartnerProfile profile = partnerProfileRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Partner profile not found"));
 
-        userRepository.findByEmail(request.getEmail())
+        userRepository.findByEmailIgnoreCase(request.getEmail())
                 .filter(found -> !found.getId().equals(user.getId()))
                 .ifPresent(found -> {
                     throw new IllegalArgumentException("Email already in use");

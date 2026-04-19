@@ -16,12 +16,14 @@ export default function Admin() {
     partners,
     bookings,
     services,
+    attendance,
     addPartner,
     assignAdminBooking,
     updateAdminBookingStatus,
     fetchAdminPartners,
     fetchAdminBookings,
     fetchAdminServices,
+    fetchAdminAttendance,
     createAdminService,
     updateAdminService,
     deleteAdminService,
@@ -31,6 +33,7 @@ export default function Admin() {
   const [credentials, setCredentials] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [partnerForm, setPartnerForm] = useState({
     id: "",
     password: "",
@@ -62,7 +65,7 @@ export default function Admin() {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        await Promise.all([fetchAdminPartners(), fetchAdminBookings(), fetchAdminServices()]);
+        await Promise.all([fetchAdminPartners(), fetchAdminBookings(), fetchAdminServices(), fetchAdminAttendance()]);
         if (!active) return;
         setError("");
       } catch (err) {
@@ -78,7 +81,7 @@ export default function Admin() {
     return () => {
       active = false;
     };
-  }, [admin, fetchAdminBookings, fetchAdminPartners, fetchAdminServices]);
+  }, [admin, fetchAdminAttendance, fetchAdminBookings, fetchAdminPartners, fetchAdminServices]);
 
   const stats = useMemo(
     () => ({
@@ -122,10 +125,13 @@ export default function Admin() {
   const handleAdminLogin = async (event) => {
     event.preventDefault();
     try {
+      setIsLoggingIn(true);
       await loginAdmin(credentials);
       setError("");
     } catch (err) {
       setError(err?.message || "Invalid admin credentials.");
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -274,7 +280,7 @@ export default function Admin() {
               <input type="password" value={credentials.password} onChange={(event) => setCredentials((prev) => ({ ...prev, password: event.target.value }))} style={inputStyle} />
             </label>
             {error ? <p style={{ margin: 0, color: "#ef4444" }}>{error}</p> : null}
-            <button type="submit" style={primaryButton}>Login to Admin Panel</button>
+            <button type="submit" style={primaryButton} disabled={isLoggingIn}>{isLoggingIn ? "Checking access..." : "Login to Admin Panel"}</button>
           </form>
           <div style={hintBox}>
             <strong>Admin login</strong>
@@ -306,6 +312,32 @@ export default function Admin() {
           <StatCard label="Assigned" value={stats.assigned} />
           <StatCard label="Completed" value={stats.completed} />
         </div>
+
+        <section style={{ ...panelStyle, marginTop: "22px" }}>
+          <h2 style={panelTitle}>Attendance Overview</h2>
+          <p style={{ margin: "10px 0 0", color: "#5b6878", lineHeight: 1.7 }}>
+            Employee attendance stores one row per day per employee with check-in and check-out timestamps to keep storage usage minimal.
+          </p>
+          <div style={{ display: "grid", gap: "14px", marginTop: "18px" }}>
+            {attendance.length ? attendance.slice(0, 8).map((item) => (
+              <div key={item.attendanceId} style={miniCard}>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: 0, color: "#102542" }}>{item.partnerName}</h3>
+                  <p style={{ margin: "6px 0 0", color: "#5b6878" }}>{item.employeeId} | {formatAttendanceDate(item.attendanceDate)}</p>
+                </div>
+                <div style={{ display: "grid", gap: "6px", justifyItems: "end", color: "#475569" }}>
+                  <span>In: {item.checkInAt ? formatDateTime(item.checkInAt) : "--"}</span>
+                  <span>Out: {item.checkOutAt ? formatDateTime(item.checkOutAt) : "Pending"}</span>
+                </div>
+              </div>
+            )) : (
+              <EmptyStateCard
+                title="No attendance marked yet"
+                message="Partner attendance entries will appear here after employees check in from their dashboard."
+              />
+            )}
+          </div>
+        </section>
 
         <div style={dashboardGrid} className="admin-dashboard-grid">
           <section style={panelStyle}>
@@ -599,6 +631,23 @@ export default function Admin() {
       </div>
     </div>
   );
+}
+
+function formatDateTime(value) {
+  return new Date(value).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function formatAttendanceDate(value) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
 }
 
 function StatCard({ label, value }) {

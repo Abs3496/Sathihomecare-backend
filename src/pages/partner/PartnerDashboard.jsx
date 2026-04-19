@@ -10,15 +10,20 @@ export default function PartnerDashboard() {
   const {
     partner,
     bookings,
+    attendance,
     logout,
     togglePartnerStatus,
     fetchCurrentPartnerProfile,
     fetchPartnerBookings,
-    updatePartnerBookingStatus
+    updatePartnerBookingStatus,
+    fetchPartnerAttendance,
+    markPartnerAttendance
   } = useAuth();
   const [activeTab, setActiveTab] = useState("All");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [attendanceMessage, setAttendanceMessage] = useState("");
+  const [attendanceError, setAttendanceError] = useState("");
 
   useEffect(() => {
     if (!partner) return;
@@ -28,7 +33,7 @@ export default function PartnerDashboard() {
     const loadDashboard = async () => {
       setLoading(true);
       try {
-        await Promise.all([fetchCurrentPartnerProfile(), fetchPartnerBookings()]);
+        await Promise.all([fetchCurrentPartnerProfile(), fetchPartnerBookings(), fetchPartnerAttendance()]);
         if (!active) return;
         setError("");
       } catch (err) {
@@ -44,7 +49,7 @@ export default function PartnerDashboard() {
     return () => {
       active = false;
     };
-  }, [partner, fetchCurrentPartnerProfile, fetchPartnerBookings]);
+  }, [partner, fetchCurrentPartnerProfile, fetchPartnerBookings, fetchPartnerAttendance]);
 
   const filteredBookings = bookings.filter((booking) => {
     const belongsToPartner = booking.partnerEmployeeId === partner?.id || booking.partnerId === partner?.userId;
@@ -52,6 +57,21 @@ export default function PartnerDashboard() {
     if (activeTab === "All") return true;
     return booking.status === activeTab;
   });
+
+  const todayAttendance = attendance.find((item) => item.attendanceDate === new Date().toISOString().slice(0, 10));
+
+  const handleAttendance = async (action) => {
+    setAttendanceMessage("");
+    setAttendanceError("");
+    try {
+      const response = await markPartnerAttendance(action);
+      setAttendanceMessage(action === "in"
+        ? `Check-in recorded at ${new Date(response.checkInAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}.`
+        : `Check-out recorded at ${new Date(response.checkOutAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}.`);
+    } catch (err) {
+      setAttendanceError(err?.message || "Unable to update attendance right now.");
+    }
+  };
 
   return (
     <div style={pageStyle} className="page-padding">
@@ -73,6 +93,37 @@ export default function PartnerDashboard() {
         </div>
 
         <PartnerCard partner={partner} />
+
+        <section style={attendanceCard}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "14px", flexWrap: "wrap", alignItems: "center" }}>
+            <div>
+              <p style={eyebrow}>Daily Attendance</p>
+              <h2 style={{ margin: "8px 0 0", fontSize: "28px", color: "#102542" }}>Mark today&apos;s attendance</h2>
+              <p style={{ margin: "10px 0 0", color: "#5b6878", lineHeight: 1.7 }}>
+                Lightweight attendance stores only one daily check-in and one checkout, so storage usage low rehta hai.
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <button type="button" onClick={() => handleAttendance("in")} style={statusButton} disabled={Boolean(todayAttendance?.checkedIn)}>
+                {todayAttendance?.checkedIn ? "Checked In" : "Check In"}
+              </button>
+              <button type="button" onClick={() => handleAttendance("out")} style={ghostActionButton} disabled={!todayAttendance?.checkedIn || Boolean(todayAttendance?.checkedOut)}>
+                {todayAttendance?.checkedOut ? "Checked Out" : "Check Out"}
+              </button>
+            </div>
+          </div>
+          {attendanceMessage ? <p style={{ margin: "14px 0 0", color: "#0f8f86", fontWeight: 700 }}>{attendanceMessage}</p> : null}
+          {attendanceError ? <p style={{ margin: "14px 0 0", color: "#ef4444", fontWeight: 700 }}>{attendanceError}</p> : null}
+          <div style={{ display: "grid", gap: "12px", marginTop: "18px" }}>
+            {attendance.length ? attendance.slice(0, 5).map((item) => (
+              <div key={item.attendanceId} style={attendanceRow}>
+                <span>{formatAttendanceDate(item.attendanceDate)}</span>
+                <span>{item.checkInAt ? formatAttendanceTime(item.checkInAt) : "--"}</span>
+                <span>{item.checkOutAt ? formatAttendanceTime(item.checkOutAt) : "Pending"}</span>
+              </div>
+            )) : <div style={emptyState}>Attendance records will appear here after check-in.</div>}
+          </div>
+        </section>
 
         <section style={{ marginTop: "28px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
@@ -123,6 +174,21 @@ export default function PartnerDashboard() {
       </div>
     </div>
   );
+}
+
+function formatAttendanceDate(value) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function formatAttendanceTime(value) {
+  return new Date(value).toLocaleTimeString("en-IN", {
+    hour: "numeric",
+    minute: "2-digit"
+  });
 }
 
 const pageStyle = {
@@ -202,4 +268,32 @@ const emptyState = {
   padding: "22px",
   color: "#5b6878",
   boxShadow: "0 14px 32px rgba(15, 23, 42, 0.06)"
+};
+
+const attendanceCard = {
+  marginTop: "24px",
+  background: "#ffffff",
+  borderRadius: "24px",
+  padding: "24px",
+  boxShadow: "0 18px 42px rgba(15, 23, 42, 0.08)"
+};
+
+const ghostActionButton = {
+  border: "1px solid #cbd5e1",
+  borderRadius: "12px",
+  background: "#ffffff",
+  color: "#102542",
+  padding: "12px 16px",
+  fontWeight: 700,
+  cursor: "pointer"
+};
+
+const attendanceRow = {
+  background: "#f8fbff",
+  borderRadius: "16px",
+  padding: "14px 16px",
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gap: "12px",
+  color: "#475569"
 };

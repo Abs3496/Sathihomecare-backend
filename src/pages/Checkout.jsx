@@ -186,6 +186,32 @@ export default function Checkout() {
     }
   };
 
+  const handleDownloadReceipt = () => {
+    if (!lastBooking) return;
+
+    const receiptLines = [
+      "Sathi Homecare Receipt",
+      `Order ID: SHC-${lastBooking.id}`,
+      `Booking ID: ${lastBooking.id}`,
+      `Service: ${lastBooking.service}`,
+      `Amount Paid: Rs. ${lastBooking.amount ?? grandTotal}`,
+      `Payment Mode: ${paymentMethods.find((item) => item.id === paymentMethod)?.label}`,
+      `Customer: ${patientForm.customerName}`,
+      `Patient: ${patientForm.patientName}`,
+      `Contact: ${patientForm.customerPhone}`,
+      `Address: ${address || patientForm.patientAddress}`,
+      `Generated At: ${new Date().toLocaleString("en-IN")}`
+    ].join("\n");
+
+    const blob = new Blob([receiptLines], { type: "text/plain;charset=utf-8" });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = `sathi-receipt-${lastBooking.id}.txt`;
+    link.click();
+    URL.revokeObjectURL(objectUrl);
+  };
+
   if (orderPlaced) {
     return (
       <div style={pageStyle} className="page-padding">
@@ -202,6 +228,18 @@ export default function Checkout() {
             <span>Amount paid: Rs. {lastBooking?.amount ?? grandTotal}</span>
             <span>Patient: {patientForm.patientName}</span>
             <span>Contact: {patientForm.customerPhone}</span>
+          </div>
+          <div style={receiptAddon}>
+            <div>
+              <p style={sectionEyebrow}>Receipt Ready</p>
+              <h2 style={{ margin: "8px 0 0", fontSize: "24px", color: "#102542" }}>Order confirmation add-on</h2>
+              <p style={{ margin: "10px 0 0", color: "#5b6878", lineHeight: 1.7 }}>
+                Order ID: <strong>SHC-{lastBooking?.id}</strong>
+              </p>
+            </div>
+            <button type="button" onClick={handleDownloadReceipt} style={secondaryLinkButton}>
+              Download Receipt
+            </button>
           </div>
           <Link to="/" style={primaryLink}>
             Back to Home
@@ -756,4 +794,27 @@ const primaryLink = {
   padding: "12px 18px",
   borderRadius: "14px",
   fontWeight: 700
+};
+
+const receiptAddon = {
+  marginTop: "22px",
+  padding: "18px",
+  borderRadius: "20px",
+  background: "#f8fbff",
+  border: "1px solid #d7e3ef",
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "14px",
+  alignItems: "center",
+  flexWrap: "wrap"
+};
+
+const secondaryLinkButton = {
+  border: "none",
+  borderRadius: "14px",
+  background: "#1cb5ac",
+  color: "#ffffff",
+  padding: "12px 18px",
+  fontWeight: 700,
+  cursor: "pointer"
 };

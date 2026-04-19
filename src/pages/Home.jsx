@@ -1,19 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { homepageAssets } from "../assets";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { servicesData } from "../data/servicesData";
+import { blogsData } from "../data/blogsData";
 
 const nursing = homepageAssets.serviceIcons.nursing;
 const icu = homepageAssets.serviceIcons.therapy;
 const oldcare = homepageAssets.serviceIcons.consultation;
-const heroNursing = homepageAssets.heroBanner;
 const appLogo = homepageAssets.logo;
 
 const heroCards = [
-  { title: "Nursing Services", subtitle: "Certified support at home", offer: "UP TO 30% OFF", image: heroNursing, type: "nursing" },
+  { title: "Nursing Services", subtitle: "Certified support at home", offer: "UP TO 30% OFF", image: nursing, type: "nursing" },
   { title: "Ayurvedic Therapy", subtitle: "Natural wellness sessions", offer: "UP TO 25% OFF", image: icu, type: "therapy" },
   { title: "Counselling", subtitle: "Mental and family guidance", offer: "UP TO 20% OFF", image: oldcare, type: "counselling" }
 ];
@@ -22,7 +22,7 @@ const discoverServices = [
   { title: "Patient Care", category: "Nursing", image: nursing, type: "nursing", query: "patient care" },
   { title: "Elderly Care", category: "Nursing", image: oldcare, type: "nursing", query: "elderly care" },
   { title: "Mother & Baby", category: "Nursing", image: nursing, type: "nursing", query: "mother baby" },
-  { title: "Post Surgery", category: "Recovery", image: heroNursing, type: "nursing", query: "post surgery" },
+  { title: "Post Surgery", category: "Recovery", image: nursing, type: "nursing", query: "post surgery" },
   { title: "Pain Relief", category: "Therapy", image: icu, type: "therapy", query: "pain relief" },
   { title: "Full Body Therapy", category: "Therapy", image: icu, type: "therapy", query: "full body" },
   { title: "Mental Health", category: "Counselling", image: oldcare, type: "counselling", query: "mental health" },
@@ -44,6 +44,13 @@ const reviews = [
   { name: "Sneha Das", location: "Kolkata", text: "Ayurvedic therapy sessions were well planned and the booking experience felt smooth from search to first visit.", role: "Booked therapy sessions" }
 ];
 
+const floatingTestimonials = [
+  "Rohit from Delhi booked patient care service",
+  "Neha from Ranchi booked elderly care support",
+  "Aman from Patna booked ayurvedic therapy session",
+  "Pooja from Kolkata booked counselling support"
+];
+
 const stats = [
   { value: 7000, label: "Happy families served" },
   { value: 6000000, label: "Care hours delivered" },
@@ -54,6 +61,7 @@ const stats = [
 const footerGroups = {
   services: ["Home Nursing", "Ayurvedic Therapy", "Counselling", "ICU Care at Home"],
   company: [
+    { label: "Blogs", to: "/blogs" },
     { label: "Know The Founders", to: "/founders" },
     { label: "How It Works", to: "/services" },
     { label: "Join as Caregiver", to: "/partner/login" },
@@ -72,8 +80,11 @@ const mixedServices = [...servicesData.nursing.slice(0, 4), ...servicesData.ther
 
 export default function Home() {
   usePageSeo({
-    title: "Sathi Homecare | Trusted Nursing, Therapy and Counselling at Home",
-    description: "Book trusted home nursing, ayurvedic therapy, counselling and elder care with Sathi Homecare. Secure booking, responsive support and startup-ready care delivery."
+    title: "Sathi Homecare Lucknow | Home Nursing, Ayurvedic Therapy and Counselling Services",
+    description: "Sathi Homecare offers trusted home nursing, ayurvedic therapy, counselling and elder care services in Lucknow with secure booking and responsive support.",
+    keywords: "Sathi Homecare Lucknow, home nursing Lucknow, ayurvedic therapy Lucknow, counselling services Lucknow, patient care at home Lucknow, elder care Lucknow",
+    canonicalPath: "/",
+    image: homepageAssets.heroBanner
   });
 
   const navigate = useNavigate();
@@ -85,6 +96,12 @@ export default function Home() {
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState("");
   const [locationCoords, setLocationCoords] = useState(null);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+  const whatsappLink = useMemo(() => {
+    const prefilled = encodeURIComponent("Hi Sathi Homecare, mujhe homecare service ke baare me consultation chahiye.");
+    return `https://wa.me/919876543210?text=${prefilled}`;
+  }, []);
 
   const buildServicesPath = ({ type = "", query = "", nextLocation = "" } = {}) => {
     const params = new URLSearchParams();
@@ -157,6 +174,49 @@ export default function Home() {
     });
   };
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setTestimonialIndex((previous) => (previous + 1) % floatingTestimonials.length);
+    }, 4200);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "sathi-homecare-ld-json";
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name: "Sathi Homecare",
+      image: new URL(homepageAssets.heroBanner, window.location.origin).toString(),
+      url: window.location.origin,
+      telephone: "+91-98765-43210",
+      email: "care@sathihomecare.in",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Lucknow",
+        addressRegion: "Uttar Pradesh",
+        addressCountry: "IN"
+      },
+      areaServed: [
+        { "@type": "City", name: "Lucknow" },
+        { "@type": "State", name: "Uttar Pradesh" }
+      ],
+      priceRange: "₹₹",
+      description: "Home nursing, ayurvedic therapy, counselling, patient care, and elder care services in Lucknow.",
+      sameAs: [
+        "https://sathihomecare.in/"
+      ]
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      document.getElementById("sathi-homecare-ld-json")?.remove();
+    };
+  }, []);
+
   return (
     <div style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", background: "#f8f7f2", color: "#1f2937" }}>
       <style>{`
@@ -166,18 +226,23 @@ export default function Home() {
         }
       `}</style>
       <section style={{ position: "relative", overflow: "hidden", background: "linear-gradient(180deg, #0a2440 0%, #0d594f 78%, #f8f7f2 78%, #f8f7f2 100%)", padding: "20px 24px 0" }} className="page-padding">
-        <video autoPlay loop muted playsInline poster={homepageAssets.heroBanner} style={{ position: "absolute", inset: 0, width: "100%", height: "78%", objectFit: "cover" }}>
+        <div style={{ position: "sticky", top: 0, zIndex: 6, margin: "-20px -24px 12px", background: "rgba(12, 89, 79, 0.96)", color: "#f8fffd", textAlign: "center", fontSize: "12px", fontWeight: 700, letterSpacing: "0.04em", padding: "7px 12px", backdropFilter: "blur(10px)" }}>
+          Free Consultation for First Booking
+        </div>
+        <video autoPlay loop muted playsInline preload="metadata" poster={homepageAssets.heroBanner} style={{ position: "absolute", inset: 0, width: "100%", height: "78%", objectFit: "cover" }}>
           <source src={homepageAssets.heroVideo} type="video/mp4" />
         </video>
         <div style={{ position: "absolute", inset: 0, height: "78%", background: "linear-gradient(90deg, rgba(8, 31, 53, 0.82) 0%, rgba(8, 31, 53, 0.68) 34%, rgba(12, 100, 82, 0.62) 100%)" }} />
         <div style={{ maxWidth: "1480px", margin: "0 auto", position: "relative", zIndex: 1 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <img src={appLogo} alt="Sathi Homecare" style={{ width: "42px", height: "42px", objectFit: "contain", borderRadius: "12px", background: "#ffffff" }} />
+              <div style={brandLogoShell}>
+                <img src={appLogo} alt="Sathi Homecare" style={brandLogoImage} />
+              </div>
               <span style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff" }}>Sathi Homecare</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "18px", flexWrap: "wrap" }}>
-              <span style={{ color: "#fff3eb", fontSize: "14px", fontWeight: 600 }}>For Families</span>
+              <Link to="/blogs" style={{ color: "#fff3eb", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>Blogs</Link>
               <Link to="/founders" style={{ color: "#fff3eb", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>Know the Founders</Link>
               <Link to="/login" style={{ padding: "12px 18px", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.45)", textDecoration: "none", color: "#ffffff", fontWeight: 700, background: "rgba(255,255,255,0.06)" }}>Login As</Link>
               <Link to={dashboardPath} style={{ width: "42px", height: "42px", borderRadius: "50%", textDecoration: "none", background: "rgba(255,255,255,0.14)", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>
@@ -220,6 +285,14 @@ export default function Home() {
                 <input placeholder="Search nursing, therapy, counselling..." style={{ width: "100%", border: "none", outline: "none", fontSize: "15px", color: "#374151", background: "transparent" }} value={serviceSearch} onChange={(event) => setServiceSearch(event.target.value)} onKeyDown={handleSearchKeyDown} />
               </div>
             </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap", marginTop: "16px" }}>
+              {["Verified Caregivers", "24x7 Support", "Background Checked"].map((badge) => (
+                <span key={badge} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", color: "#f9fafb", fontSize: "13px", fontWeight: 600 }}>
+                  <span aria-hidden="true">✔</span>
+                  {badge}
+                </span>
+              ))}
+            </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", paddingBottom: "32px" }}>
@@ -230,10 +303,14 @@ export default function Home() {
                     <h3 style={{ margin: 0, color: "#35353d", fontSize: "clamp(1.7rem, 2.6vw, 2.5rem)", fontWeight: 800, lineHeight: 1.08 }}>{card.title}</h3>
                     <p style={{ margin: "14px 0 0", color: "#6b7280", fontSize: "18px", lineHeight: 1.45, fontWeight: 500 }}>{card.subtitle}</p>
                     <div style={{ display: "inline-flex", marginTop: "18px", padding: "10px 14px", borderRadius: "999px", color: "#1aa398", fontWeight: 700, fontSize: "15px", background: card.accent }}>{card.offer}</div>
+                    <p style={{ margin: "14px 0 0", color: "#64748b", fontSize: "13px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Starting from ₹499</p>
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "16px" }}>
-                    <div style={{ width: "58px", height: "58px", borderRadius: "50%", background: "#d7eefc", color: "#0c506c", boxShadow: "0 10px 24px rgba(12, 80, 108, 0.14)", border: "1px solid rgba(12, 80, 108, 0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", flexShrink: 0 }}>{">"}</div>
-                    <img src={card.image} alt={card.title} loading="lazy" style={{ width: "160px", maxWidth: "55%", objectFit: "contain", alignSelf: "flex-end" }} />
+                    <div style={{ display: "grid", gap: "10px", justifyItems: "start" }}>
+                      <div style={{ width: "58px", height: "58px", borderRadius: "50%", background: "#d7eefc", color: "#0c506c", boxShadow: "0 10px 24px rgba(12, 80, 108, 0.14)", border: "1px solid rgba(12, 80, 108, 0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", flexShrink: 0 }}>{">"}</div>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "108px", padding: "9px 12px", borderRadius: "12px", background: "#102542", color: "#ffffff", fontWeight: 700, fontSize: "13px" }}>View Details</span>
+                    </div>
+                    <img src={card.image} alt={card.title} loading="lazy" decoding="async" style={{ width: "160px", maxWidth: "55%", objectFit: "cover", alignSelf: "flex-end", borderRadius: "24px" }} />
                   </div>
                 </article>
               </Link>
@@ -247,7 +324,7 @@ export default function Home() {
             {scrollingDiscoverServices.map((item, index) => (
               <article key={`${item.title}-${index}`} style={{ textAlign: "center", minWidth: "140px", flex: "0 0 auto" }}>
                 <div style={{ width: "114px", height: "114px", margin: "0 auto 12px", borderRadius: "50%", background: "linear-gradient(145deg, #ffffff, #fde7d9)", boxShadow: "0 12px 30px rgba(29, 41, 57, 0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <img src={item.image} alt={item.title} loading="lazy" style={{ width: "74px", height: "74px", objectFit: "contain" }} />
+                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" style={{ width: "74px", height: "74px", objectFit: "contain" }} />
                 </div>
                 <h3 style={{ margin: 0, fontSize: "16px", color: "#1f2937" }}>{item.title}</h3>
                 <p style={{ margin: "6px 0 0", color: "#667085", fontSize: "13px" }}>{item.category}</p>
@@ -262,13 +339,14 @@ export default function Home() {
           {featuredServices.map((service) => (
             <article key={service.id} style={{ background: "#ffffff", borderRadius: "22px", overflow: "hidden", border: "1px solid #ececec", boxShadow: "0 14px 28px rgba(15, 23, 42, 0.05)" }}>
               <div style={{ position: "relative", height: "190px", background: "linear-gradient(145deg, #fff4ed, #ffe6d5)" }}>
-                <img src={service.image} alt={service.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", padding: "18px" }} />
+                <img src={service.image} alt={service.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "contain", padding: "18px" }} />
                 <div style={{ position: "absolute", left: "14px", top: "14px", background: "#1aa398", color: "#ffffff", padding: "6px 10px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" }}>Care Special</div>
               </div>
               <div style={{ padding: "16px" }}>
                 <h3 style={{ margin: 0, fontSize: "24px", color: "#1f2937" }}>{service.title}</h3>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginTop: "10px", color: "#667085", fontSize: "14px", lineHeight: 1.5 }}><span>{service.category}</span><span>{service.price}</span></div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", marginTop: "10px", color: "#667085", fontSize: "14px", lineHeight: 1.5 }}><span>{service.timing}</span><span>Book today</span></div>
+                <div style={{ marginTop: "8px", color: "#64748b", fontSize: "13px", fontWeight: 700 }}>Starting from ₹499</div>
                 <div style={{ marginTop: "14px", background: "#2bb673", color: "#ffffff", padding: "10px 12px", borderRadius: "12px", fontWeight: 700, fontSize: "14px" }}>{service.offer}</div>
                 <div style={{ marginTop: "10px", background: "#dff6ea", color: "#2b8a5b", padding: "10px 12px", borderRadius: "12px", fontWeight: 600, fontSize: "14px" }}>{service.extra}</div>
                 <div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}>
@@ -305,6 +383,25 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+            </article>
+          ))}
+        </div>
+      </SectionShell>
+
+      <SectionShell title="Latest blogs for families" subtitle="Helpful articles around safe bookings, caregiving, recovery support, and therapy planning.">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "18px" }}>
+          {blogsData.slice(0, 3).map((blog) => (
+            <article key={blog.id} style={{ background: "#ffffff", borderRadius: "22px", padding: "20px", border: "1px solid #ececec", boxShadow: "0 14px 28px rgba(15, 23, 42, 0.05)" }}>
+              <div style={{ display: "inline-flex", padding: "8px 12px", borderRadius: "999px", background: "#e7fbf6", color: "#0f8f86", fontSize: "12px", fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase" }}>{blog.category}</div>
+              <h3 style={{ margin: "16px 0 0", fontSize: "22px", color: "#102542", lineHeight: 1.35 }}>{blog.title}</h3>
+              <p style={{ margin: "12px 0 0", color: "#5b6878", lineHeight: 1.7 }}>{blog.excerpt}</p>
+              <div style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", color: "#64748b", fontSize: "14px" }}>
+                <span>{blog.date}</span>
+                <span>{blog.readTime}</span>
+              </div>
+              <Link to="/blogs" style={{ marginTop: "16px", display: "inline-flex", textDecoration: "none", color: "#1aa398", fontWeight: 700 }}>
+                Read More
+              </Link>
             </article>
           ))}
         </div>
@@ -373,7 +470,9 @@ export default function Home() {
         <div className="footer-grid" style={{ maxWidth: "1480px", margin: "0 auto" }}>
           <div style={{ maxWidth: "380px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "#ffffff", color: "#0f8f86", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "22px" }}>S</div>
+              <div style={footerLogoShell}>
+                <img src={appLogo} alt="Sathi Homecare logo" style={footerLogoImage} />
+              </div>
               <span style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff" }}>Sathi Homecare</span>
             </div>
             <p style={{ margin: "16px 0 0", lineHeight: 1.8, color: "#cbd5e1" }}>Home nursing, therapy, counselling, and elder support for families who want quality care without leaving home.</p>
@@ -393,6 +492,21 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <a
+        href={whatsappLink}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Chat on WhatsApp"
+        style={{ position: "fixed", right: "20px", bottom: "22px", zIndex: 14, width: "58px", height: "58px", borderRadius: "50%", background: "#25d366", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", textDecoration: "none", boxShadow: "0 18px 36px rgba(37, 211, 102, 0.32)" }}
+      >
+        W
+      </a>
+
+      <div style={{ position: "fixed", left: "20px", bottom: "22px", zIndex: 13, maxWidth: "280px", background: "#ffffff", color: "#102542", borderRadius: "18px", padding: "14px 16px", boxShadow: "0 20px 45px rgba(15, 23, 42, 0.18)", border: "1px solid #e5e7eb" }}>
+        <p style={{ margin: 0, color: "#0f8f86", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recent booking</p>
+        <p style={{ margin: "8px 0 0", fontSize: "14px", lineHeight: 1.5 }}>{floatingTestimonials[testimonialIndex]}</p>
+      </div>
     </div>
   );
 }
@@ -493,4 +607,36 @@ const footerColumnLink = {
 const footerLegalLink = {
   color: "#94a3b8",
   textDecoration: "none"
+};
+
+const brandLogoShell = {
+  width: "42px",
+  height: "42px",
+  borderRadius: "12px",
+  overflow: "hidden",
+  background: "#ffffff",
+  flexShrink: 0
+};
+
+const brandLogoImage = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  transform: "scale(1.2)"
+};
+
+const footerLogoShell = {
+  width: "44px",
+  height: "44px",
+  borderRadius: "12px",
+  overflow: "hidden",
+  background: "#ffffff",
+  flexShrink: 0
+};
+
+const footerLogoImage = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+  transform: "scale(1.22)"
 };

@@ -77,7 +77,8 @@ button:hover {
   .admin-dashboard-grid,
   .checkout-grid,
   .home-location-grid,
-  .founders-grid {
+  .founders-grid,
+  .founders-header-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -134,6 +135,7 @@ button:hover {
   .home-location-grid,
   .checkout-grid,
   .founders-grid,
+  .founders-header-grid,
   .login-shell,
   .admin-dashboard-grid {
     grid-template-columns: 1fr !important;
@@ -186,6 +188,7 @@ button:hover {
   display: grid;
   grid-template-columns: minmax(260px, 1.3fr) repeat(auto-fit, minmax(170px, 1fr));
   gap: 26px;
+  align-items: start;
 }
 
 @media (max-width: 520px) {
@@ -232,5 +235,6 @@ button:hover {
 
   .footer-legal-links {
     justify-content: center !important;
+    text-align: center !important;
   }
 }
