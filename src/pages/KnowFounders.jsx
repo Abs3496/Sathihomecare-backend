@@ -9,7 +9,9 @@ const founders = [
     role: "Founder & CEO",
     summary: [
       "Software Engineer",
-      "Handles product, tech and platform vision"
+      "Handles product, tech and platform vision",
+      "Phone: 8090806731",
+      "Email: support@sathihomecare.in"
     ],
     image: founderAssets.abhishek
   },
@@ -77,19 +79,13 @@ export default function KnowFounders() {
             <p style={eyebrowSecondary}>Founding team</p>
             <h2 style={sectionTitle}>Card-based profiles with a cleaner launch-ready presentation</h2>
           </div>
-          <p style={sectionText}>
-            Each founder card keeps the launch layout clean while clearly explaining leadership, operations, and service expertise behind Sathi Homecare.
-          </p>
         </div>
 
         <div style={gridStyle} className="founders-grid">
-          {founders.map((founder, index) => (
+          {founders.map((founder) => (
             <article
               key={founder.key}
-              style={{
-                ...cardStyle,
-                ...(index === 0 ? featuredFounderCard : {})
-              }}
+              style={cardStyle}
               className="compact-mobile-card"
             >
               <div style={imageWrap}>
@@ -103,9 +99,6 @@ export default function KnowFounders() {
                     <p key={line} style={summaryItem}>{line}</p>
                   ))}
                 </div>
-                <p style={noteStyle}>
-                  {founder.name} helps shape a care journey that is dependable, human, and better coordinated for families booking services online.
-                </p>
               </div>
             </article>
           ))}
@@ -232,7 +225,7 @@ const sectionStyle = {
 
 const sectionHeader = {
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) minmax(280px, 420px)",
+  gridTemplateColumns: "1fr",
   gap: "20px",
   alignItems: "end"
 };
@@ -242,15 +235,9 @@ const sectionTitle = {
   fontSize: "clamp(1.9rem, 3vw, 2.8rem)"
 };
 
-const sectionText = {
-  margin: 0,
-  color: "#475569",
-  lineHeight: 1.8
-};
-
 const gridStyle = {
   display: "grid",
-  gridTemplateColumns: "repeat(2, minmax(280px, 1fr))",
+  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
   gap: "22px",
   marginTop: "24px"
 };
@@ -264,14 +251,15 @@ const cardStyle = {
 };
 
 const imageWrap = {
-  padding: "18px",
+  padding: "14px",
   background: "linear-gradient(145deg, #eff6ff, #ecfdf5)"
 };
 
 const imageStyle = {
   width: "100%",
-  aspectRatio: "4 / 5",
+  aspectRatio: "1 / 1",
   objectFit: "cover",
+  objectPosition: "top center",
   borderRadius: "22px",
   display: "block"
 };
@@ -291,7 +279,7 @@ const cardEyebrow = {
 
 const cardTitle = {
   margin: "10px 0 0",
-  fontSize: "30px",
+  fontSize: "24px",
   lineHeight: 1.12
 };
 
@@ -306,13 +294,6 @@ const summaryItem = {
   color: "#334155",
   lineHeight: 1.7,
   fontWeight: 500
-};
-
-const noteStyle = {
-  margin: "16px 0 0",
-  color: "#64748b",
-  lineHeight: 1.7,
-  fontSize: "14px"
 };
 
 const missionStyle = {
@@ -349,10 +330,6 @@ const brandLogoShell = {
 const brandLogoImage = {
   width: "100%",
   height: "100%",
-  objectFit: "cover",
-  transform: "scale(1.22)"
-};
-
-const featuredFounderCard = {
-  gridColumn: "1 / -1"
+  objectFit: "contain",
+  transform: "scale(0.94)"
 };

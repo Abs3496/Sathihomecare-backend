@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch, authFetch } from "../api";
 import {
   createStoredSession,
@@ -112,6 +112,7 @@ export function AuthProvider({ children }) {
     return readStoredSession(raw, defaultSession);
   });
   const [isSessionReady, setIsSessionReady] = useState(false);
+  const initialTokenRef = useRef(session.token);
 
   const [partners, setPartners] = useState(() => {
     const raw = localStorage.getItem(PARTNERS_KEY);
@@ -121,6 +122,80 @@ export function AuthProvider({ children }) {
   const [bookings, setBookings] = useState([]);
   const [services, setServices] = useState([]);
   const [attendance, setAttendance] = useState([]);
+
+  const logout = useCallback(() => {
+    setSession(defaultSession);
+    setBookings([]);
+    setAttendance([]);
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  const normalizeSessionFromAuthResponse = useCallback((response) => {
+    if (!response?.token) {
+      throw new Error("Session refresh failed.");
+    }
+
+    if (response.role === "CUSTOMER") {
+      return {
+        token: response.token,
+        customer: {
+          id: response.userId,
+          name: response.fullName,
+          email: response.email,
+          phone: response.phone
+        },
+        partner: null,
+        admin: null
+      };
+    }
+
+    if (response.role === "PARTNER") {
+      return {
+        token: response.token,
+        customer: null,
+        partner: {
+          id: response.employeeId,
+          employeeId: response.employeeId,
+          name: response.fullName,
+          email: response.email,
+          phone: response.phone,
+          role: response.role
+        },
+        admin: null
+      };
+    }
+
+    return {
+      token: response.token,
+      customer: null,
+      partner: null,
+      admin: {
+        id: response.userId,
+        name: response.fullName,
+        email: response.email,
+        phone: response.phone
+      }
+    };
+  }, []);
+
+  const refreshAuthSession = useCallback(async (token) => {
+    if (!token) return null;
+
+    try {
+      const response = await authFetch(token, "/auth/refresh", {
+        method: "POST"
+      });
+      const nextSession = normalizeSessionFromAuthResponse(response);
+      setSession(nextSession);
+      return nextSession;
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) {
+        logout();
+        return null;
+      }
+      throw error;
+    }
+  }, [logout, normalizeSessionFromAuthResponse]);
 
   useEffect(() => {
     if (session?.token) {
@@ -135,31 +210,67 @@ export function AuthProvider({ children }) {
   }, [partners]);
 
   useEffect(() => {
-    if (!session?.token) {
+    const initialToken = initialTokenRef.current;
+
+    if (!initialToken) {
       setIsSessionReady(true);
       return undefined;
     }
 
-    if (isTokenExpired(session.token)) {
-      setSession(defaultSession);
-      setBookings([]);
-      setAttendance([]);
+    if (isTokenExpired(initialToken)) {
+      logout();
       setIsSessionReady(true);
       return undefined;
     }
 
-    setIsSessionReady(true);
+    let active = true;
+
+    const validateStoredSession = async () => {
+      setIsSessionReady(false);
+
+      try {
+        await refreshAuthSession(initialToken);
+      } catch {
+        if (!active) return;
+        logout();
+      } finally {
+        if (active) {
+          setIsSessionReady(true);
+        }
+      }
+    };
+
+    validateStoredSession();
+
+    return () => {
+      active = false;
+    };
+  }, [logout, refreshAuthSession]);
+
+  useEffect(() => {
+    if (!session?.token) return undefined;
+
     const expiry = createStoredSession(session).expiresAt;
     if (!expiry) return undefined;
 
     const timeoutId = window.setTimeout(() => {
-      setSession(defaultSession);
-      setBookings([]);
-      setAttendance([]);
+      logout();
     }, Math.max(0, expiry - Date.now()));
 
     return () => window.clearTimeout(timeoutId);
-  }, [session]);
+  }, [logout, session]);
+
+  useEffect(() => {
+    if (!session?.token) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      refreshAuthSession(session.token).catch((error) => {
+        console.warn("Unable to refresh auth session", error);
+      });
+    }, 60000);
+
+    return () => window.clearInterval(intervalId);
+  }, [refreshAuthSession, session?.token]);
 
   useEffect(() => {
     if (!session.token || !session.customer) {
@@ -218,16 +329,10 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ emailOrPhone: identifier, password })
     });
 
-    const customer = {
-      id: response.userId,
-      name: response.fullName,
-      email: response.email,
-      phone: response.phone
-    };
-
-    setSession({ token: response.token, customer, partner: null, admin: null });
+    const nextSession = normalizeSessionFromAuthResponse(response);
+    setSession(nextSession);
     setAttendance([]);
-    return customer;
+    return nextSession.customer;
   };
 
   const registerCustomer = async ({ fullName, email, phone, password }) => {
@@ -243,16 +348,10 @@ export function AuthProvider({ children }) {
       body: JSON.stringify(payload)
     });
 
-    const customer = {
-      id: response.userId,
-      name: response.fullName,
-      email: response.email,
-      phone: response.phone
-    };
-
-    setSession({ token: response.token, customer, partner: null, admin: null });
+    const nextSession = normalizeSessionFromAuthResponse(response);
+    setSession(nextSession);
     setAttendance([]);
-    return customer;
+    return nextSession.customer;
   };
 
   const loginPartner = async ({ employeeId, password }) => {
@@ -262,18 +361,11 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ employeeId: identifier, password })
     });
 
-    const partner = {
-      id: response.employeeId,
-      name: response.fullName,
-      email: response.email,
-      phone: response.phone,
-      role: response.role
-    };
-
-    setSession({ token: response.token, customer: null, partner, admin: null });
+    const nextSession = normalizeSessionFromAuthResponse(response);
+    setSession(nextSession);
     setBookings([]);
     setAttendance([]);
-    return partner;
+    return nextSession.partner;
   };
 
   const loginAdmin = async ({ username, password }) => {
@@ -283,24 +375,11 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ emailOrPhone: identifier, password })
     });
 
-    const admin = {
-      id: response.userId,
-      name: response.fullName || username,
-      email: response.email,
-      phone: response.phone
-    };
-
-    setSession({ token: response.token, customer: null, partner: null, admin });
+    const nextSession = normalizeSessionFromAuthResponse(response);
+    setSession(nextSession);
     setBookings([]);
     setAttendance([]);
-    return admin;
-  };
-
-  const logout = () => {
-    setSession(defaultSession);
-    setBookings([]);
-    setAttendance([]);
-    localStorage.removeItem(STORAGE_KEY);
+    return nextSession.admin;
   };
 
   const updateCustomerProfile = async ({ fullName, email, phone }) => {
@@ -796,6 +875,7 @@ export function AuthProvider({ children }) {
     createPaymentOrder,
     verifyPayment,
     markPaymentFailed,
+    refreshAuthSession,
     refreshCustomerBookings,
     fetchAdminPartners,
     fetchAdminBookings,
