@@ -59,24 +59,6 @@ const stats = [
   { value: 18, label: "Care professionals onboarded" }
 ];
 
-const footerGroups = {
-  services: ["Home Nursing", "Ayurvedic Therapy", "Counselling", "ICU Care at Home"],
-  company: [
-    { label: "Blogs", to: "/blogs" },
-    { label: "Know The Founders", to: "/founders" },
-    { label: "How It Works", to: "/services" },
-    { label: "Careers", href: "https://forms.gle/o4hq9J9CrsfpgQSWA" },
-    { label: "Contact Us", to: "/" }
-  ],
-  support: [
-    { label: "Book a Visit", to: "/services" },
-    { label: "FAQ", to: "/faq" },
-    { label: "Privacy Policy", to: "/privacy-policy" },
-    { label: "Terms & Conditions", to: "/terms-conditions" },
-    { label: "Refund & Cancellation", to: "/refund-cancellation-policy" }
-  ]
-};
-
 const mixedServices = [...servicesData.nursing.slice(0, 4), ...servicesData.therapy, ...servicesData.counselling];
 
 export default function Home() {
@@ -530,37 +512,6 @@ export default function Home() {
         </Link>
       </SectionShell>
 
-      <footer className="site-footer" style={{ marginTop: "52px", background: "#111827", color: "#cbd5e1" }}>
-        <div className="footer-grid">
-          <div className="footer-brand">
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={footerLogoShell}>
-                <img src={appLogo} alt="Sathi Homecare logo" style={footerLogoImage} />
-              </div>
-              <span style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff" }}>Sathi Homecare</span>
-            </div>
-            <p style={{ margin: "16px 0 0", lineHeight: 1.8, color: "#cbd5e1" }}>
-              Home nursing, therapy, counselling, and elder support for families who want quality care without leaving home.
-            </p>
-            <p style={{ margin: "10px 0 0", color: "#cbd5e1" }}>Call us: +91 9451764251</p>
-            <p style={{ margin: "6px 0 0", color: "#cbd5e1" }}>Email: support@sathihomecare.in</p>
-          </div>
-
-          <FooterColumn title="Services" items={footerGroups.services} />
-          <FooterColumn title="Company" items={footerGroups.company} />
-          <FooterColumn title="Support" items={footerGroups.support} />
-        </div>
-
-        <div className="footer-legal-links">
-          <span>Copyright 2026 Sathi Homecare. All rights reserved.</span>
-          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-            <Link to="/privacy-policy" style={footerLegalLink}>Privacy</Link>
-            <Link to="/terms-conditions" style={footerLegalLink}>Terms</Link>
-            <Link to="/refund-cancellation-policy" style={footerLegalLink}>Refunds</Link>
-          </div>
-        </div>
-      </footer>
-
       <div style={{ position: "fixed", left: "20px", bottom: "22px", zIndex: 13, maxWidth: "280px", background: "#ffffff", color: "#102542", borderRadius: "18px", padding: "14px 16px", boxShadow: "0 20px 45px rgba(15, 23, 42, 0.18)", border: "1px solid #e5e7eb" }} className="recent-booking-toast">
         <p style={{ margin: 0, color: "#0f8f86", fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recent booking</p>
         <p style={{ margin: "8px 0 0", fontSize: "14px", lineHeight: 1.5 }}>{floatingTestimonials[testimonialIndex]}</p>
@@ -642,25 +593,6 @@ function Counter({ value }) {
   }, [value]);
 
   return <h3 style={{ margin: 0, fontSize: "clamp(2rem, 4vw, 3rem)", color: "#1f2937" }}>{count.toLocaleString()}+</h3>;
-}
-
-function FooterColumn({ title, items }) {
-  return (
-    <div>
-      <h3 style={{ margin: 0, color: "#ffffff", fontSize: "18px" }}>{title}</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "16px" }}>
-        {items.map((item) => (
-          typeof item === "string" ? (
-            <span key={item} style={{ color: "#cbd5e1" }}>{item}</span>
-          ) : item.href ? (
-            <a key={item.label} href={item.href} target="_blank" rel="noreferrer" style={footerColumnLink}>{item.label}</a>
-          ) : (
-            <Link key={item.label} to={item.to} style={footerColumnLink}>{item.label}</Link>
-          )
-        ))}
-      </div>
-    </div>
-  );
 }
 
 const heroNavLink = {
@@ -782,16 +714,6 @@ const reviewControlButton = {
   cursor: "pointer"
 };
 
-const footerColumnLink = {
-  color: "#cbd5e1",
-  textDecoration: "none"
-};
-
-const footerLegalLink = {
-  color: "#94a3b8",
-  textDecoration: "none"
-};
-
 const brandLogoShell = {
   width: "42px",
   height: "42px",
@@ -806,20 +728,4 @@ const brandLogoImage = {
   height: "100%",
   objectFit: "contain",
   transform: "scale(0.94)"
-};
-
-const footerLogoShell = {
-  width: "44px",
-  height: "44px",
-  borderRadius: "12px",
-  overflow: "hidden",
-  background: "#ffffff",
-  flexShrink: 0
-};
-
-const footerLogoImage = {
-  width: "100%",
-  height: "100%",
-  objectFit: "contain",
-  transform: "scale(0.92)"
 };
