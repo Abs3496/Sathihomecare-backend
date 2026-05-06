@@ -62,9 +62,7 @@ Swagger UI is available at:
 http://localhost:8080/swagger-ui/index.html
 ```
 
-## Live Account Credentials
 
-- Admin: `Abhishekadmin@sathihomecare.in / adminabhishek@123`
 
 Customers sign up using the registration flow. Partner accounts are created by admin from the dashboard.
 
