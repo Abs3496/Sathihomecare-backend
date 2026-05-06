@@ -5,7 +5,7 @@ export function usePageSeo({
   description,
   keywords,
   canonicalPath = "",
-  image = "/favicon.svg"
+  image = "/favicon.png"
 }) {
   useEffect(() => {
     const previousTitle = document.title;
