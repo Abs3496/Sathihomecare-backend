@@ -371,7 +371,7 @@ export default function Home() {
       </SectionShell>
 
       <SectionShell title="Featured homecare services" subtitle="A curated mix from nursing, therapy, and counselling designed like a modern booking marketplace.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "18px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "18px" }} className="featured-services-grid">
           {featuredServices.map((service) => (
             <article key={service.id} style={{ background: "#ffffff", borderRadius: "22px", overflow: "hidden", border: "1px solid #ececec", boxShadow: "0 14px 28px rgba(15, 23, 42, 0.05)" }}>
               <div style={{ position: "relative", height: "190px", background: "linear-gradient(145deg, #fff4ed, #ffe6d5)" }}>
@@ -449,7 +449,7 @@ export default function Home() {
       </SectionShell>
 
       <SectionShell title="Achievements so far" subtitle="Steady progress built around real families, practical service operations, and measurable care delivery.">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "18px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "18px" }} className="stats-grid">
           {stats.map((item) => (
             <div key={item.label} style={{ background: "#ffffff", borderRadius: "26px", padding: "30px 24px", textAlign: "center", boxShadow: "0 14px 32px rgba(15, 23, 42, 0.06)" }}>
               <Counter value={item.value} />
@@ -530,8 +530,8 @@ export default function Home() {
         </Link>
       </SectionShell>
 
-      <footer style={{ marginTop: "52px", background: "#111827", color: "#cbd5e1", padding: "54px 24px 22px" }} className="page-padding">
-        <div className="footer-grid" style={{ maxWidth: "1480px", margin: "0 auto" }}>
+      <footer className="site-footer" style={{ marginTop: "52px", background: "#111827", color: "#cbd5e1" }}>
+        <div className="footer-grid">
           <div className="footer-brand">
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={footerLogoShell}>
@@ -539,15 +539,19 @@ export default function Home() {
               </div>
               <span style={{ fontSize: "18px", fontWeight: 700, color: "#ffffff" }}>Sathi Homecare</span>
             </div>
-            <p style={{ margin: "16px 0 0", lineHeight: 1.8, color: "#cbd5e1" }}>Home nursing, therapy, counselling, and elder support for families who want quality care without leaving home.</p>
+            <p style={{ margin: "16px 0 0", lineHeight: 1.8, color: "#cbd5e1" }}>
+              Home nursing, therapy, counselling, and elder support for families who want quality care without leaving home.
+            </p>
             <p style={{ margin: "10px 0 0", color: "#cbd5e1" }}>Call us: +91 9451764251</p>
-            <p style={{ margin: "10px 0 0", color: "#cbd5e1" }}>Email: support@sathihomecare.in</p>
+            <p style={{ margin: "6px 0 0", color: "#cbd5e1" }}>Email: support@sathihomecare.in</p>
           </div>
+
           <FooterColumn title="Services" items={footerGroups.services} />
           <FooterColumn title="Company" items={footerGroups.company} />
           <FooterColumn title="Support" items={footerGroups.support} />
         </div>
-        <div style={{ maxWidth: "1480px", margin: "26px auto 0", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", color: "#94a3b8" }} className="footer-legal-links">
+
+        <div className="footer-legal-links">
           <span>Copyright 2026 Sathi Homecare. All rights reserved.</span>
           <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
             <Link to="/privacy-policy" style={footerLegalLink}>Privacy</Link>

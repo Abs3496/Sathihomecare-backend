@@ -120,7 +120,7 @@ export default function Services() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f6f8fb", color: "#102542", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", paddingBottom: "80px" }} className="page-padding">
-      <section style={{ background: "linear-gradient(135deg, #0a2440, #0d594f)", padding: "48px 24px" }}>
+      <section style={{ background: "linear-gradient(135deg, #0a2440, #0d594f)", padding: "48px 24px" }} className="app-hero-section">
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
           <p style={{ margin: 0, color: "#8de3d4", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, fontSize: "13px" }}>Service catalogue</p>
           <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap", marginTop: "12px" }}>
@@ -161,7 +161,7 @@ export default function Services() {
         </div>
       </section>
 
-      <section style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 24px 0" }}>
+      <section style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 24px 0" }} className="app-content-section">
         {serviceError ? (
           <div style={{ background: "#fee2e2", borderRadius: "24px", padding: "28px", color: "#991b1b", textAlign: "center", boxShadow: "0 18px 42px rgba(15, 23, 42, 0.08)" }}>
             <h2 style={{ margin: 0, fontSize: "28px" }}>Unable to load services</h2>
@@ -175,7 +175,7 @@ export default function Services() {
             <p style={{ margin: "12px 0 0", color: "#667085", lineHeight: 1.7 }}>Please wait while we load the latest service catalogue.</p>
           </div>
         ) : visibleServices.length ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }} className="services-catalog-grid">
             {visibleServices.map((item) => {
               const quantity = getQty(item.id);
 
@@ -197,13 +197,13 @@ export default function Services() {
                       <span style={{ color: "#667085", textTransform: "capitalize", fontSize: "14px" }}>{item.type}</span>
                     </div>
                     <div style={{ marginTop: "8px", display: "flex", justifyContent: "space-between", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                      <span style={{ color: "#64748b", fontSize: "13px", fontWeight: 700 }}>Starting from ₹499</span>
+                      <span style={{ color: "#64748b", fontSize: "13px", fontWeight: 700 }}>Starting from Rs. 499</span>
                       <Link to={buildServicesPath({ type: item.type, query: item.name, location })} style={{ textDecoration: "none", color: "#102542", fontWeight: 700, fontSize: "13px" }}>
                         View Details
                       </Link>
                     </div>
 
-                    <div style={{ display: "flex", gap: "10px", marginTop: "18px" }}>
+                    <div style={{ display: "flex", gap: "10px", marginTop: "18px" }} className="service-card-actions">
                       <button type="button" onClick={() => addToCart(item)} style={{ flex: 1, border: "none", borderRadius: "14px", background: "#102542", color: "#ffffff", padding: "14px 16px", fontWeight: 700, cursor: "pointer" }}>
                         Add to Cart
                       </button>
