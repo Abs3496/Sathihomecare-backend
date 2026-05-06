@@ -4,14 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "next dev -H 0.0.0.0",
+    "build": "next build",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "next start",
+    "vite:dev": "vite",
+    "vite:build": "vite build",
     "test": "vitest --config vitest.config.cjs --pool threads",
     "test:run": "vitest run --config vitest.config.cjs --pool threads"
   },
   "dependencies": {
+    "next": "^16.2.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0"

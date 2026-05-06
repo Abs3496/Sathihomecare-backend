@@ -21,6 +21,10 @@ const defaultSession = {
   admin: null
 };
 
+function hasStorage() {
+  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
 function normalizeService(response) {
   return {
     id: response.id,
@@ -108,6 +112,7 @@ function sanitizeStoredPartners(raw) {
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(() => {
+    if (!hasStorage()) return defaultSession;
     const raw = localStorage.getItem(STORAGE_KEY);
     return readStoredSession(raw, defaultSession);
   });
@@ -115,6 +120,7 @@ export function AuthProvider({ children }) {
   const initialTokenRef = useRef(session.token);
 
   const [partners, setPartners] = useState(() => {
+    if (!hasStorage()) return initialPartners;
     const raw = localStorage.getItem(PARTNERS_KEY);
     return sanitizeStoredPartners(raw);
   });
@@ -127,7 +133,7 @@ export function AuthProvider({ children }) {
     setSession(defaultSession);
     setBookings([]);
     setAttendance([]);
-    localStorage.removeItem(STORAGE_KEY);
+    if (hasStorage()) localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   const normalizeSessionFromAuthResponse = useCallback((response) => {
@@ -199,14 +205,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (session?.token) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(createStoredSession(session)));
+      if (hasStorage()) localStorage.setItem(STORAGE_KEY, JSON.stringify(createStoredSession(session)));
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      if (hasStorage()) localStorage.removeItem(STORAGE_KEY);
     }
   }, [session]);
 
   useEffect(() => {
-    localStorage.setItem(PARTNERS_KEY, JSON.stringify(partners));
+    if (hasStorage()) localStorage.setItem(PARTNERS_KEY, JSON.stringify(partners));
   }, [partners]);
 
   useEffect(() => {
@@ -303,7 +309,7 @@ export function AuthProvider({ children }) {
     return () => {
       active = false;
     };
-  }, [session.token, session.customer]);
+  }, [logout, session.token, session.customer]);
 
   const refreshCustomerBookings = useCallback(async (token = session.token, customerEmail = session.customer?.email || "") => {
     if (!token) return [];
@@ -320,7 +326,7 @@ export function AuthProvider({ children }) {
       console.warn("Unable to refresh customer bookings", error);
       throw error;
     }
-  }, [session.customer?.email, session.token]);
+  }, [logout, session.customer?.email, session.token]);
 
   const loginCustomer = async ({ email, password }) => {
     const identifier = String(email || "").trim();
