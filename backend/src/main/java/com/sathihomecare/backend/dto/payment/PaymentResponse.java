@@ -14,4 +14,12 @@ public class PaymentResponse {
     private BigDecimal amount;
     private String status;
     private String message;
+    private String upiId;
+    private String merchantName;
+    private String upiUri;
+    private String qrCodeUrl;
+    private String transactionNote;
+    private String paymentApp;
+    private String utrNumber;
+    private boolean proofUploaded;
 }

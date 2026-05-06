@@ -11,12 +11,10 @@ public class PaymentVerifyRequest {
     @NotNull
     private Long bookingId;
 
-    @NotBlank
-    private String razorpayOrderId;
+    private String gatewayOrderId;
 
     @NotBlank
-    private String razorpayPaymentId;
+    private String utrNumber;
 
-    @NotBlank
-    private String razorpaySignature;
+    private String paymentApp;
 }

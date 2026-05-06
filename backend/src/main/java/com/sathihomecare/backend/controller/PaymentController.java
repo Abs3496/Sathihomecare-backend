@@ -5,17 +5,20 @@ import com.sathihomecare.backend.dto.payment.PaymentFailureRequest;
 import com.sathihomecare.backend.dto.payment.PaymentResponse;
 import com.sathihomecare.backend.dto.payment.PaymentVerifyRequest;
 import com.sathihomecare.backend.service.PaymentService;
-import com.razorpay.RazorpayException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -28,17 +31,18 @@ public class PaymentController {
     public ResponseEntity<PaymentResponse> createOrder(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody PaymentOrderRequest request
-    ) throws RazorpayException {
+    ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(paymentService.createPaymentOrder(request, userDetails.getUsername()));
     }
 
-    @PostMapping("/verify")
+    @PostMapping(value = "/verify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PaymentResponse> verifyPayment(
             @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody PaymentVerifyRequest request
-    ) throws RazorpayException {
-        return ResponseEntity.ok(paymentService.verifyPayment(request, userDetails.getUsername()));
+            @Valid @ModelAttribute PaymentVerifyRequest request,
+            @RequestPart(value = "screenshot", required = false) MultipartFile screenshot
+    ) {
+        return ResponseEntity.ok(paymentService.verifyPayment(request, userDetails.getUsername(), screenshot));
     }
 
     @PostMapping("/fail")

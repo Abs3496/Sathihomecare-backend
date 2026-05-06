@@ -38,5 +38,5 @@ Date: 2026-05-06
 
 - Production frontend now expects a Next deployment (`npm run build`, then `npm run preview`/`next start`) or a platform with Next.js support.
 - Set `NEXT_PUBLIC_API_BASE_URL=https://sathihomecare-backend.onrender.com/api`.
-- Set `NEXT_PUBLIC_RAZORPAY_KEY_ID` when enabling live checkout.
+- Configure `APP_PAYMENT_UPI_ID=8090806731@ybl` and optional `RESEND_API_KEY` for live UPI checkout confirmations.
 - If deploying behind Apache/static hosting only, switch deployment to a Next-compatible Node host or configure static export separately.

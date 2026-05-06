@@ -9,7 +9,7 @@ Sathi Homecare is a full-stack homecare booking platform with:
 - service catalogue browsing
 - booking creation and tracking
 - admin partner/service management
-- Razorpay-backed payment order and verification endpoints
+- direct UPI payment intents with UTR/proof verification endpoints
 
 ## Project Structure
 
@@ -71,7 +71,6 @@ Customers sign up using the registration flow. Partner accounts are created by a
 Frontend environment values:
 
 - `VITE_API_BASE_URL`
-- `VITE_RAZORPAY_KEY_ID`
 
 Backend environment values:
 
@@ -81,8 +80,13 @@ Backend environment values:
 - `DB_PASSWORD`
 - `JWT_SECRET`
 - `JWT_EXPIRATION_MS`
-- `RAZORPAY_KEY_ID`
-- `RAZORPAY_KEY_SECRET`
+- `APP_PAYMENT_UPI_ID`
+- `APP_PAYMENT_MERCHANT_NAME`
+- `APP_PAYMENT_SUPPORT_WHATSAPP`
+- `APP_PAYMENT_PROOF_UPLOAD_DIR`
+- `APP_EMAIL_FROM`
+- `APP_EMAIL_ADMIN_TO`
+- `RESEND_API_KEY`
 - `JPA_DDL_AUTO`
 - `JPA_SHOW_SQL`
 - `APP_CORS_ALLOWED_ORIGINS`
@@ -99,5 +103,5 @@ If the production MySQL database already exists, run these before the next backe
 ## Current Known Constraints
 
 - Checkout currently supports one service per booking.
-- Cash-on-visit is shown in the UI, but the active backend flow expects online payment.
+- Online payment uses UPI deep links, QR fallback, and post-payment UTR submission.
 - Java 21 is the target baseline; the backend build now also enables Byte Buddy experimental mode during tests to behave better on newer JDKs.

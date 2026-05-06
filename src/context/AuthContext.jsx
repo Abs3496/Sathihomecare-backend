@@ -750,9 +750,10 @@ export function AuthProvider({ children }) {
 
   const verifyPayment = async ({
     bookingId,
-    razorpayOrderId,
-    razorpayPaymentId,
-    razorpaySignature
+    gatewayOrderId,
+    utrNumber,
+    paymentApp,
+    screenshot
   }) => {
     if (!session.token) {
       throw new Error("Please login before verifying payment.");
@@ -760,14 +761,16 @@ export function AuthProvider({ children }) {
 
     let response;
     try {
+      const payload = new FormData();
+      payload.append("bookingId", bookingId);
+      if (gatewayOrderId) payload.append("gatewayOrderId", gatewayOrderId);
+      payload.append("utrNumber", String(utrNumber || "").trim());
+      payload.append("paymentApp", paymentApp || "UPI");
+      if (screenshot) payload.append("screenshot", screenshot);
+
       response = await authFetch(session.token, "/payments/verify", {
         method: "POST",
-        body: JSON.stringify({
-          bookingId,
-          razorpayOrderId,
-          razorpayPaymentId,
-          razorpaySignature
-        })
+        body: payload
       });
     } catch (error) {
       if (error?.status === 401 || error?.status === 403) logout();
@@ -783,8 +786,8 @@ export function AuthProvider({ children }) {
 
   const markPaymentFailed = async ({
     bookingId,
-    razorpayOrderId,
-    razorpayPaymentId = "",
+    gatewayOrderId,
+    paymentReference = "",
     failureReason
   }) => {
     if (!session.token) {
@@ -796,8 +799,8 @@ export function AuthProvider({ children }) {
         method: "POST",
         body: JSON.stringify({
           bookingId,
-          razorpayOrderId,
-          razorpayPaymentId,
+          gatewayOrderId,
+          paymentReference,
           failureReason
         })
       });

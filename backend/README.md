@@ -13,7 +13,7 @@ Phase 1 Java backend scaffold for the Sathi Homecare project.
 - customer booking creation and booking history APIs
 - partner assigned-booking APIs
 - admin booking and partner overview APIs
-- starter entities for booking, patient details, address, and payment
+- UPI payment intent, UTR verification, payment proof upload, and optional Resend email confirmation
 
 ## Tech Stack
 
@@ -48,8 +48,13 @@ Important environment variables:
 - `DB_PASSWORD`
 - `JWT_SECRET`
 - `JWT_EXPIRATION_MS`
-- `RAZORPAY_KEY_ID`
-- `RAZORPAY_KEY_SECRET`
+- `APP_PAYMENT_UPI_ID`
+- `APP_PAYMENT_MERCHANT_NAME`
+- `APP_PAYMENT_SUPPORT_WHATSAPP`
+- `APP_PAYMENT_PROOF_UPLOAD_DIR`
+- `APP_EMAIL_FROM`
+- `APP_EMAIL_ADMIN_TO`
+- `RESEND_API_KEY`
 - `JPA_DDL_AUTO`
 - `JPA_SHOW_SQL`
 
@@ -86,6 +91,9 @@ Requires a customer JWT token.
 - `POST /api/customer/bookings`
 - `GET /api/customer/bookings`
 - `DELETE /api/customer/bookings/{bookingId}`
+- `POST /api/payments/create-order`
+- `POST /api/payments/verify` as multipart form data with `bookingId`, `utrNumber`, `paymentApp`, optional `gatewayOrderId`, and optional `screenshot`
+- `POST /api/payments/fail`
 
 Booking payload:
 
@@ -128,7 +136,6 @@ Requires an admin JWT token.
 
 ## What Comes Next in Phase 2
 
-- payment order creation and verification APIs
 - partner creation and management APIs
 - customer profile APIs
 - richer admin analytics

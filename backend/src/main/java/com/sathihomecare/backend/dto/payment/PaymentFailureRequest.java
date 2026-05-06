@@ -11,10 +11,9 @@ public class PaymentFailureRequest {
     @NotNull
     private Long bookingId;
 
-    @NotBlank
-    private String razorpayOrderId;
+    private String gatewayOrderId;
 
-    private String razorpayPaymentId;
+    private String paymentReference;
 
     @NotBlank
     private String failureReason;
