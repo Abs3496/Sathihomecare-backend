@@ -74,7 +74,6 @@ export default function Home() {
   const { cart, addToCart, removeFromCart } = useCart();
   const { customer, partner, logout } = useAuth();
   const [location, setLocation] = useState("");
-  const [serviceSearch, setServiceSearch] = useState("");
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState("");
@@ -91,7 +90,7 @@ export default function Home() {
     return queryString ? `/services?${queryString}` : "/services";
   };
 
-  const handleSearch = () => navigate(buildServicesPath({ query: serviceSearch.trim(), nextLocation: location.trim() }));
+  const handleSearch = () => navigate(buildServicesPath({ nextLocation: location.trim() }));
   const handleSearchKeyDown = (event) => {
     if (event.key === "Enter") handleSearch();
   };
@@ -265,11 +264,11 @@ export default function Home() {
           </div>
 
           <div style={{ maxWidth: "980px", margin: "72px auto 48px", textAlign: "center" }} className="hero-copy-block">
-            <h1 style={{ margin: 0, color: "#ffffff", fontSize: "clamp(2.3rem, 4vw, 4rem)", lineHeight: 1.18, fontWeight: 800, letterSpacing: "-0.02em" }}>
+            <h1 style={{ margin: 0, color: "#ffffff", fontSize: "clamp(2.3rem, 4vw, 4rem)", lineHeight: 1.18, fontWeight: 800, letterSpacing: 0 }}>
               Book home services and discover trusted caregivers with Sathi Homecare.
             </h1>
 
-            <div style={{ marginTop: "28px", display: "grid", gridTemplateColumns: "minmax(360px, 1.15fr) minmax(300px, 0.85fr)", gap: "14px", alignItems: "start", justifyContent: "center" }} className="home-hero-search-grid">
+            <div style={{ margin: "28px auto 0", width: "min(620px, 100%)", display: "grid", alignItems: "start", justifyContent: "center" }} className="home-hero-search-grid home-location-search-only">
               <div style={{ position: "relative" }}>
                 <div style={searchBoxStyle}>
                   <span style={searchIconStyle}>@</span>
@@ -297,17 +296,6 @@ export default function Home() {
                   </div>
                 ) : null}
                 {locationError ? <p style={{ margin: "10px 0 0", color: "#ffd5cf", fontSize: "13px" }}>{locationError}</p> : null}
-              </div>
-
-              <div style={searchBoxStyle}>
-                <span style={searchIconStyle}>?</span>
-                <input
-                  placeholder="Search nursing, therapy, counselling..."
-                  style={searchInputStyle}
-                  value={serviceSearch}
-                  onChange={(event) => setServiceSearch(event.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                />
               </div>
             </div>
           </div>

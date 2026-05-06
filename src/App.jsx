@@ -15,50 +15,57 @@ import Blogs from "./pages/Blogs";
 import Faq from "./pages/Faq";
 import CartBar from "./components/CartBar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SiteFooter from "./components/SiteFooter";
 
 function App() {
   return (
     <BrowserRouter>
-      <CartBar />
+      <div className="app-frame">
+        <CartBar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/partner/login" element={<PartnerLogin />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/blogs" element={<Blogs />} />
-        <Route path="/faq" element={<Faq />} />
-        <Route path="/founders" element={<KnowFounders />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-conditions" element={<TermsConditions />} />
-        <Route path="/refund-cancellation-policy" element={<RefundPolicy />} />
-        <Route
-          path="/user/dashboard"
-          element={
-            <ProtectedRoute role="customer">
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/partner/dashboard"
-          element={
-            <ProtectedRoute role="partner">
-              <PartnerDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute role="admin">
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+        <main className="app-main">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/partner/login" element={<PartnerLogin />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/blogs" element={<Blogs />} />
+            <Route path="/faq" element={<Faq />} />
+            <Route path="/founders" element={<KnowFounders />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-conditions" element={<TermsConditions />} />
+            <Route path="/refund-cancellation-policy" element={<RefundPolicy />} />
+            <Route
+              path="/user/dashboard"
+              element={
+                <ProtectedRoute role="customer">
+                  <UserDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/partner/dashboard"
+              element={
+                <ProtectedRoute role="partner">
+                  <PartnerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute role="admin">
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </main>
+
+        <SiteFooter />
+      </div>
     </BrowserRouter>
   );
 }
