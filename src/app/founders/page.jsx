@@ -5,7 +5,6 @@ export const metadata = {
 };
 
 const founders = [
-  ["Abhishek Pandey", "Operations and technology"],
   ["Dharmendra", "Care coordination"],
   ["Pinku", "Service support"]
 ];
@@ -17,7 +16,7 @@ export default function FoundersPage() {
         <div>
           <p className="eyebrow">Team</p>
           <h1>Know the founders</h1>
-          <p>Sathi Homecare is built around dependable care coordination, practical technology and family-first support.</p>
+          <p>Sathi Homecare is built around dependable care coordination and family-first support.</p>
         </div>
       </div>
       <div className="grid">
