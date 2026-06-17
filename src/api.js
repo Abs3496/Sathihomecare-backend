@@ -6,7 +6,7 @@ export const API_BASE_URL = (
   || "https://sathihomecare-backend.onrender.com/api"
 )
   .replace(/\/+$/, "");
-const API_TIMEOUT_MS = Number(processEnv.NEXT_PUBLIC_API_TIMEOUT_MS || viteEnv.VITE_API_TIMEOUT_MS || 15000);
+const API_TIMEOUT_MS = Number(processEnv.NEXT_PUBLIC_API_TIMEOUT_MS || viteEnv.VITE_API_TIMEOUT_MS || 60000);
 const RETRYABLE_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
 
 async function safeJson(response) {

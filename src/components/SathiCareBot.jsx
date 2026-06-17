@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "../api";
+import logo from "../assets/images/icons/logo.png";
 
 const RELATION_CHIPS = ["Father", "Mother", "Self", "Senior Citizen", "Patient", "Not Sure"];
 const SERVICE_CHIPS = ["Elder Care", "Home Nursing", "Post Surgery Care", "Physiotherapy", "Ayurvedic Therapy", "Talk to Human Expert"];
@@ -17,7 +18,7 @@ export default function SathiCareBot({
   brandName = "Sathi Homecare",
   agentName = "Priya Sharma",
   agentRole = "Senior Care Receptionist",
-  languages = "Hindi - English",
+  languages = "Hindi",
   phone = "+91 63929 52884",
   stats = { families: "5000+", verified: "100%", support: "24/7", rating: "4.8/5" }
 }) {
@@ -62,6 +63,11 @@ export default function SathiCareBot({
       }, 300);
     }
   };
+
+  useEffect(() => {
+    const timer = window.setTimeout(openWidget, 2000);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const markAnswered = (msgId, label) => {
     setMessages((current) => current.map((message) => (message.id === msgId ? { ...message, answered: label } : message)));
@@ -216,6 +222,8 @@ export default function SathiCareBot({
         try {
           const response = await apiFetch("/ai-receptionist/chat", {
             method: "POST",
+            timeoutMs: 75000,
+            retries: 2,
             body: JSON.stringify({
               messages: buildAiMessages(payload),
               draft: buildAiDraft(payload),
@@ -267,99 +275,119 @@ export default function SathiCareBot({
       )}
 
       {isOpen && (
-        <div className="sathi-panel" role="dialog" aria-label="Sathi Homecare booking assistant">
-          <div className="sathi-header">
+        <div className="sathi-overlay">
+          <div className="sathi-panel" role="dialog" aria-label="Sathi Homecare booking assistant">
             <button className="sathi-close" onClick={() => setIsOpen(false)} aria-label="Close">X</button>
-            <div className="sathi-header-top">
-              <div className="sathi-brand-pill">
-                <span className="sathi-brand-logo">S</span>
-                <span className="sathi-brand-name">{brandName.toUpperCase()}</span>
-              </div>
-              <span className="sathi-header-right-title">Premium Care, At Home</span>
-            </div>
 
-            <div className="sathi-agent-row">
-              <Avatar text={initials(agentName)} large />
-              <div>
-                <div className="sathi-agent-name">{agentName}</div>
-                <div className="sathi-agent-role">{agentRole}</div>
-                <div className="sathi-agent-meta">
-                  <span className="sathi-available"><span className="sathi-dot-green" /> Available Now</span>
-                  <span className="sathi-langs">{languages}</span>
+            <aside className="sathi-left">
+              <div className="sathi-left-brand">
+                <img src={logo} alt="Sathi Homecare" />
+                <div>
+                  <strong>{brandName}</strong>
+                  <span>Care That Feels Like Family</span>
                 </div>
               </div>
-            </div>
+              <div className="sathi-logo-stage">
+                <img src={logo} alt="Sathi Homecare assistant" />
+              </div>
+              <div className="sathi-priya-card">
+                <h2>Priya</h2>
+                <span>AI Care Assistant</span>
+                <p>Main aapki care requirement samajhne aur booking complete karne mein madad karungi.</p>
+                <div className="sathi-left-stats">
+                  <small>Trusted Care Experts</small>
+                  <small>Verified Caregivers</small>
+                  <small>24x7 Support</small>
+                </div>
+              </div>
+            </aside>
 
-            <div className="sathi-stats">
-              <Stat value={stats.families} label="Happy Families" />
-              <Stat value={stats.verified} label="Verified Staff" />
-              <Stat value={stats.support} label="Support" />
-              <Stat value={stats.rating} label="Customer Rating" />
-            </div>
-          </div>
-
-          <div className="sathi-body">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`sathi-row sathi-row-${msg.sender}`}>
-                {msg.sender === "bot" && <Avatar text={initials(agentName)} />}
-                <div className="sathi-col">
-                  <div className={`sathi-bubble sathi-bubble-${msg.sender}`}>
-                    {msg.type === "summary" ? <SummaryCard data={msg.summary} /> : <p>{msg.text}</p>}
+            <section className="sathi-right">
+              <div className="sathi-topbar">
+                <div className="sathi-agent-row">
+                  <Avatar text={initials(agentName)} large />
+                  <div>
+                    <div className="sathi-agent-name">{agentName}</div>
+                    <div className="sathi-agent-role">{agentRole}</div>
                   </div>
-                  <div className={`sathi-time sathi-time-${msg.sender}`}>{msg.time}{msg.sender === "user" ? "  seen" : ""}</div>
-
-                  {msg.chips && (
-                    <div className="sathi-chips">
-                      {msg.chips.map((chip) => {
-                        const isAnswered = msg.answered;
-                        const isThisOne = msg.answered === chip;
-                        return (
-                          <button
-                            key={chip}
-                            className={`sathi-chip ${isThisOne ? "sathi-chip-selected" : ""} ${isAnswered && !isThisOne ? "sathi-chip-faded" : ""}`}
-                            disabled={Boolean(isAnswered) && msg.stepKey !== "expertChoice" && msg.stepKey !== "postBooking"}
-                            onClick={() => handleChip(msg, chip)}
-                          >
-                            {chip}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+                </div>
+                <div className="sathi-lang-pills">
+                  <span>English</span>
+                  <span>{languages}</span>
                 </div>
               </div>
-            ))}
 
-            {isTyping && (
-              <div className="sathi-row sathi-row-bot">
-                <Avatar text={initials(agentName)} />
-                <div className="sathi-bubble sathi-bubble-bot sathi-typing"><span /><span /><span /></div>
+              <div className="sathi-body">
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`sathi-row sathi-row-${msg.sender}`}>
+                    {msg.sender === "bot" && <Avatar text={initials(agentName)} />}
+                    <div className="sathi-col">
+                      <div className={`sathi-bubble sathi-bubble-${msg.sender}`}>
+                        {msg.type === "summary" ? <SummaryCard data={msg.summary} /> : <p>{msg.text}</p>}
+                      </div>
+                      <div className={`sathi-time sathi-time-${msg.sender}`}>{msg.time}{msg.sender === "user" ? "  seen" : ""}</div>
+
+                      {msg.chips && (
+                        <div className="sathi-chips">
+                          {msg.chips.map((chip) => {
+                            const isAnswered = msg.answered;
+                            const isThisOne = msg.answered === chip;
+                            return (
+                              <button
+                                key={chip}
+                                className={`sathi-chip ${isThisOne ? "sathi-chip-selected" : ""} ${isAnswered && !isThisOne ? "sathi-chip-faded" : ""}`}
+                                disabled={Boolean(isAnswered) && msg.stepKey !== "expertChoice" && msg.stepKey !== "postBooking"}
+                                onClick={() => handleChip(msg, chip)}
+                              >
+                                {chip}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isTyping && (
+                  <div className="sathi-row sathi-row-bot">
+                    <Avatar text={initials(agentName)} />
+                    <div className="sathi-bubble sathi-bubble-bot sathi-typing"><span /><span /><span /></div>
+                  </div>
+                )}
+                <div ref={bodyEndRef} />
               </div>
-            )}
-            <div ref={bodyEndRef} />
-          </div>
 
-          <div className="sathi-quickbar">
-            <div className="sathi-quickbar-label">Quick Actions</div>
-            <div className="sathi-quickbar-row">
-              {SERVICE_CHIPS.map((item) => (
-                <button key={item} className="sathi-quick-btn" onClick={() => handleQuickAction(item)}>{item}</button>
-              ))}
-            </div>
-          </div>
+              <div className="sathi-quickbar">
+                <div className="sathi-quickbar-label">Kripya chunein <span>(Please select)</span></div>
+                <div className="sathi-quickbar-row">
+                  {SERVICE_CHIPS.map((item) => (
+                    <button key={item} className="sathi-quick-btn" onClick={() => handleQuickAction(item)}>{item}</button>
+                  ))}
+                </div>
+              </div>
 
-          <div className="sathi-inputbar">
-            <input
-              className="sathi-input"
-              type="text"
-              placeholder="Type a message..."
-              value={inputValue}
-              onChange={(event) => setInputValue(event.target.value)}
-              onKeyDown={(event) => event.key === "Enter" && handleSend()}
-            />
-            <button className="sathi-send" onClick={handleSend} aria-label="Send">Send</button>
+              <div className="sathi-inputbox">
+                <div className="sathi-inputbar">
+                  <button className="sathi-mic" type="button" aria-label="Voice input">Mic</button>
+                  <input
+                    className="sathi-input"
+                    type="text"
+                    placeholder="Type your message..."
+                    value={inputValue}
+                    onChange={(event) => setInputValue(event.target.value)}
+                    onKeyDown={(event) => event.key === "Enter" && handleSend()}
+                  />
+                  <button className="sathi-send" onClick={handleSend} aria-label="Send">Send</button>
+                </div>
+                <div className="sathi-or">or</div>
+                <button className="sathi-speak" type="button">Speak Now</button>
+              </div>
+
+              <div className="sathi-lock-note">Aapki jankari surakshit hai aur sirf behtar seva ke liye istemal ki jayegi.</div>
+            </section>
+            <div className="sathi-powered">Powered by <strong>Sathi Homecare</strong> - India's Most Trusted Home Healthcare Service</div>
           </div>
-          <div className="sathi-lock-note">Your information is secure and confidential.</div>
         </div>
       )}
     </div>
@@ -459,66 +487,90 @@ function timeToSlot(value) {
 
 const CSS = `
 .sathi-root{ position:fixed; inset:auto 24px 24px auto; z-index:9999; font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif; }
-.sathi-launcher{ min-width:64px; height:60px; border-radius:999px; border:none; cursor:pointer; background:linear-gradient(145deg,#0f766e,#10b981); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(15,118,110,.45); position:relative; font-weight:900; padding:0 18px; }
+.sathi-launcher{ min-width:64px; height:60px; border-radius:999px; border:none; cursor:pointer; background:linear-gradient(145deg,#6b4de6,#7c5cff); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(97,74,214,.42); position:relative; font-weight:900; padding:0 18px; }
 .sathi-launcher-badge{ position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:11px; font-weight:700; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid #fff; }
-.sathi-panel{ width:380px; max-width:calc(100vw - 24px); height:640px; max-height:calc(100vh - 48px); background:#fff; border-radius:20px; box-shadow:0 24px 60px rgba(0,0,0,.25); display:flex; flex-direction:column; overflow:hidden; animation:sathi-pop .25s ease; }
-@keyframes sathi-pop{ from{ opacity:0; transform:translateY(16px) scale(.97);} to{ opacity:1; transform:translateY(0) scale(1);} }
-.sathi-header{ background:linear-gradient(160deg,#0a1c33 0%,#0f2a47 55%,#0f766e 130%); color:#fff; padding:16px 18px 14px; position:relative; flex-shrink:0; }
-.sathi-close{ position:absolute; top:10px; right:10px; background:rgba(255,255,255,.15); border:none; color:#fff; width:28px; height:28px; border-radius:50%; cursor:pointer; font-weight:900; }
-.sathi-header-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-right:24px; gap:12px; }
-.sathi-brand-pill{ display:flex; align-items:center; gap:6px; background:#fff; color:#0f2a47; padding:5px 10px 5px 6px; border-radius:999px; font-size:11px; font-weight:800; letter-spacing:.3px; }
-.sathi-brand-logo{ background:linear-gradient(135deg,#0f766e,#10b981); color:#fff; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.sathi-header-right-title{ font-size:10.5px; color:#5eead4; font-weight:700; text-align:right; }
-.sathi-agent-row{ display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; }
-.sathi-agent-name{ font-size:17px; font-weight:800; }
-.sathi-agent-role{ font-size:12px; color:#cbd5e1; margin-top:1px; }
-.sathi-agent-meta{ display:flex; gap:10px; align-items:center; margin-top:5px; font-size:11px; }
-.sathi-available{ color:#34d399; font-weight:700; display:flex; align-items:center; gap:4px; }
-.sathi-dot-green{ width:6px; height:6px; border-radius:50%; background:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,.25); }
-.sathi-langs{ color:#94a3b8; }
-.sathi-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; background:rgba(255,255,255,.07); border-radius:12px; padding:9px 6px; }
-.sathi-stat{ display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; color:#e2e8f0; }
-.sathi-stat b{ font-size:12px; font-weight:800; line-height:1; }
-.sathi-stat small{ font-size:8.5px; color:#94a3b8; }
-.sathi-avatar{ border-radius:50%; background:linear-gradient(135deg,#0f766e,#14b8a6); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; }
-.sathi-avatar-lg{ width:48px; height:48px; font-size:15px; border:2px solid rgba(255,255,255,.35); }
-.sathi-avatar-sm{ width:30px; height:30px; font-size:11px; }
-.sathi-online-dot{ position:absolute; bottom:-2px; right:-2px; width:11px; height:11px; border-radius:50%; background:#22c55e; border:2px solid #0a1c33; }
-.sathi-body{ flex:1; overflow-y:auto; padding:16px 14px; background:#f4f7f8; display:flex; flex-direction:column; gap:14px; }
-.sathi-row{ display:flex; gap:8px; max-width:100%; }
+.sathi-overlay{ position:fixed; inset:0; background:rgba(18,18,22,.76); backdrop-filter:blur(4px); display:grid; place-items:center; padding:24px; }
+.sathi-panel{ position:relative; width:min(980px,calc(100vw - 48px)); height:min(650px,calc(100vh - 48px)); background:#fff; border-radius:18px; box-shadow:0 28px 80px rgba(0,0,0,.42); display:grid; grid-template-columns:390px minmax(0,1fr); grid-template-rows:minmax(0,1fr) 34px; overflow:hidden; animation:sathi-pop .22s ease; }
+@keyframes sathi-pop{ from{ opacity:0; transform:translateY(16px) scale(.98);} to{ opacity:1; transform:translateY(0) scale(1);} }
+.sathi-close{ position:absolute; top:20px; right:20px; z-index:4; background:#fff; border:1px solid #ede9fe; color:#334155; width:34px; height:34px; border-radius:50%; cursor:pointer; font-weight:900; box-shadow:0 8px 20px rgba(49,37,103,.1); }
+.sathi-left{ position:relative; min-width:0; background:linear-gradient(180deg,#faf9ff 0%,#f7f5ff 52%,#614ad6 53%,#4d36bd 100%); overflow:hidden; }
+.sathi-left-brand{ position:absolute; left:24px; top:22px; right:24px; display:flex; align-items:center; gap:10px; color:#5b43d6; z-index:2; }
+.sathi-left-brand img{ width:40px; height:40px; object-fit:contain; }
+.sathi-left-brand strong{ display:block; font-size:17px; line-height:1; }
+.sathi-left-brand span{ display:block; color:#7b6ee6; font-size:11px; margin-top:3px; font-weight:700; }
+.sathi-logo-stage{ position:absolute; inset:90px 42px 198px; border-radius:26px; background:#fff; display:grid; place-items:center; box-shadow:0 18px 45px rgba(91,67,214,.12); }
+.sathi-logo-stage img{ width:min(230px,80%); height:auto; object-fit:contain; }
+.sathi-priya-card{ position:absolute; left:0; right:0; bottom:0; height:210px; padding:34px 28px 26px; color:#fff; background:linear-gradient(145deg,#7057e8,#4d36bd); border-top-right-radius:110px; }
+.sathi-priya-card h2{ margin:0; font-size:30px; letter-spacing:0; }
+.sathi-priya-card > span{ display:inline-block; margin-left:8px; padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.18); font-size:11px; font-weight:800; vertical-align:middle; }
+.sathi-priya-card p{ margin:18px 0 20px; max-width:280px; color:#efeaff; font-size:13px; line-height:1.55; font-weight:600; }
+.sathi-left-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; max-width:310px; }
+.sathi-left-stats small{ color:#fff; font-size:10px; line-height:1.35; font-weight:800; }
+.sathi-right{ min-width:0; min-height:0; display:grid; grid-template-rows:64px minmax(0,1fr) auto auto auto; padding:22px 26px 0; background:#fff; }
+.sathi-topbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding-right:46px; }
+.sathi-agent-row{ display:flex; gap:10px; align-items:center; }
+.sathi-agent-name{ font-size:15px; color:#1e2440; font-weight:900; }
+.sathi-agent-role{ font-size:11px; color:#8b90a4; margin-top:2px; font-weight:700; }
+.sathi-lang-pills{ display:flex; gap:8px; }
+.sathi-lang-pills span{ border:1px solid #ede9fe; border-radius:999px; padding:8px 13px; color:#5b43d6; font-size:11px; font-weight:900; background:#fff; }
+.sathi-avatar{ border-radius:50%; background:linear-gradient(135deg,#6b4de6,#a78bfa); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; }
+.sathi-avatar-lg{ width:42px; height:42px; font-size:13px; }
+.sathi-avatar-sm{ width:34px; height:34px; font-size:11px; }
+.sathi-online-dot{ position:absolute; bottom:-1px; right:-1px; width:10px; height:10px; border-radius:50%; background:#22c55e; border:2px solid #fff; }
+.sathi-body{ min-height:0; overflow-y:auto; padding:4px 6px 12px 0; display:flex; flex-direction:column; gap:12px; }
+.sathi-row{ display:flex; gap:12px; max-width:100%; }
 .sathi-row-user{ flex-direction:row-reverse; }
-.sathi-col{ display:flex; flex-direction:column; max-width:78%; }
+.sathi-col{ display:flex; flex-direction:column; max-width:82%; }
 .sathi-row-user .sathi-col{ align-items:flex-end; }
-.sathi-bubble{ padding:10px 13px; border-radius:14px; font-size:13.5px; line-height:1.45; word-break:break-word; }
+.sathi-bubble{ padding:14px 16px; border-radius:14px; font-size:13px; line-height:1.55; word-break:break-word; }
 .sathi-bubble p{ margin:0; }
-.sathi-bubble-bot{ background:#fff; color:#1f2937; border-top-left-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
-.sathi-bubble-user{ background:#d6f5e8; color:#0f3d2e; border-top-right-radius:4px; }
-.sathi-time{ font-size:10px; color:#94a3b8; margin-top:3px; display:flex; align-items:center; gap:3px; }
+.sathi-bubble-bot{ background:#f1f2f7; color:#202740; border-top-left-radius:4px; }
+.sathi-bubble-user{ background:#e9ddff; color:#33216a; border-top-right-radius:4px; }
+.sathi-time{ font-size:10px; color:#8e94a8; margin-top:3px; display:flex; align-items:center; gap:3px; }
 .sathi-time-user{ justify-content:flex-end; }
-.sathi-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-.sathi-chip{ border:1.5px solid #e2e8f0; background:#fff; color:#334155; font-size:12px; font-weight:700; padding:7px 11px; border-radius:999px; cursor:pointer; transition:.15s; }
-.sathi-chip:hover:not(:disabled){ border-color:#0f766e; background:#f0fdfa; }
-.sathi-chip-selected{ background:#0f766e; color:#fff; border-color:#0f766e; }
-.sathi-chip-faded{ opacity:.4; }
+.sathi-chips{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; padding:14px; border:1px solid #edf0f6; border-radius:14px; background:#fff; box-shadow:0 10px 26px rgba(24,28,50,.04); }
+.sathi-chip{ min-height:48px; border:1px solid #e4e8f1; background:#fff; color:#202740; font-size:13px; font-weight:900; padding:9px 12px; border-radius:9px; cursor:pointer; transition:.15s; }
+.sathi-chip:hover:not(:disabled){ border-color:#7c5cff; background:#faf8ff; }
+.sathi-chip-selected{ background:#6b4de6; color:#fff; border-color:#6b4de6; }
+.sathi-chip-faded{ opacity:.42; }
 .sathi-chip:disabled{ cursor:default; }
-.sathi-summary{ display:flex; flex-direction:column; gap:6px; min-width:200px; }
-.sathi-summary-row{ display:flex; justify-content:space-between; gap:10px; font-size:12px; border-bottom:1px dashed #e2e8f0; padding-bottom:5px; }
-.sathi-summary-row span{ color:#64748b; }
-.sathi-summary-row b{ color:#0f2a47; text-align:right; }
-.sathi-typing{ display:flex; gap:4px; align-items:center; padding:13px; width:48px; }
-.sathi-typing span{ width:6px; height:6px; border-radius:50%; background:#94a3b8; animation:sathi-bounce 1.1s infinite; }
+.sathi-summary{ display:flex; flex-direction:column; gap:7px; min-width:240px; }
+.sathi-summary-row{ display:flex; justify-content:space-between; gap:12px; font-size:12px; border-bottom:1px dashed #dfe3ec; padding-bottom:6px; }
+.sathi-summary-row span{ color:#6b7280; }
+.sathi-summary-row b{ color:#2b235f; text-align:right; }
+.sathi-typing{ display:flex; gap:4px; align-items:center; padding:13px; width:50px; }
+.sathi-typing span{ width:6px; height:6px; border-radius:50%; background:#9aa1b5; animation:sathi-bounce 1.1s infinite; }
 .sathi-typing span:nth-child(2){ animation-delay:.15s; }
 .sathi-typing span:nth-child(3){ animation-delay:.3s; }
 @keyframes sathi-bounce{ 0%,60%,100%{ transform:translateY(0); opacity:.5; } 30%{ transform:translateY(-4px); opacity:1; } }
-.sathi-quickbar{ border-top:1px solid #eef1f3; padding:10px 14px 8px; flex-shrink:0; background:#fff; }
-.sathi-quickbar-label{ font-size:10.5px; font-weight:800; color:#0f766e; margin-bottom:6px; }
-.sathi-quickbar-row{ display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; scrollbar-width:thin; }
-.sathi-quick-btn{ flex-shrink:0; border:1.5px solid #e2e8f0; background:#fafbfc; font-size:11px; font-weight:700; color:#334155; padding:6px 10px; border-radius:999px; cursor:pointer; white-space:nowrap; transition:.15s; }
-.sathi-quick-btn:hover{ background:#f0fdfa; border-color:#0f766e; }
-.sathi-inputbar{ display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid #eef1f3; background:#fff; flex-shrink:0; }
-.sathi-input{ flex:1; border:1.5px solid #e2e8f0; border-radius:999px; padding:10px 14px; font-size:13px; outline:none; min-width:0; }
-.sathi-input:focus{ border-color:#0f766e; }
-.sathi-send{ border-radius:999px; border:none; background:linear-gradient(135deg,#0f766e,#14b8a6); color:#fff; padding:10px 14px; cursor:pointer; font-weight:900; flex-shrink:0; }
-.sathi-lock-note{ text-align:center; font-size:10px; color:#94a3b8; padding:0 0 10px; background:#fff; flex-shrink:0; }
-@media (max-width:480px){ .sathi-root{ inset:auto 12px 12px auto; } .sathi-panel{ width:calc(100vw - 24px); height:calc(100vh - 24px); border-radius:16px; } }
+.sathi-quickbar{ border:1px solid #edf0f6; border-radius:14px; padding:12px 16px; background:#fff; box-shadow:0 8px 22px rgba(24,28,50,.04); }
+.sathi-quickbar-label{ color:#6b4de6; font-size:12px; font-weight:900; margin-bottom:10px; }
+.sathi-quickbar-label span{ color:#7b8195; font-weight:800; }
+.sathi-quickbar-row{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.sathi-quick-btn{ min-height:42px; border:1px solid #e4e8f1; background:#fff; font-size:13px; font-weight:900; color:#202740; padding:8px 12px; border-radius:9px; cursor:pointer; white-space:nowrap; transition:.15s; }
+.sathi-quick-btn:hover{ background:#faf8ff; border-color:#7c5cff; }
+.sathi-inputbox{ margin-top:10px; border:1px solid #edf0f6; border-radius:14px; background:#fff; padding:12px 14px; box-shadow:0 8px 22px rgba(24,28,50,.04); }
+.sathi-inputbar{ display:grid; grid-template-columns:42px minmax(0,1fr) 48px; align-items:center; gap:10px; }
+.sathi-mic{ width:38px; height:38px; border:none; border-radius:50%; color:#6b4de6; background:#f3efff; font-size:11px; font-weight:900; cursor:pointer; }
+.sathi-input{ width:100%; min-width:0; height:40px; border:1px solid #e4e8f1; border-radius:11px; padding:0 14px; font-size:13px; outline:none; }
+.sathi-input:focus{ border-color:#7c5cff; }
+.sathi-send{ width:42px; height:42px; border-radius:50%; border:none; background:linear-gradient(135deg,#6b4de6,#7c5cff); color:#fff; cursor:pointer; font-size:11px; font-weight:900; }
+.sathi-or{ text-align:center; color:#7b8195; font-size:11px; margin:5px 0; font-weight:800; }
+.sathi-speak{ display:block; margin:0 auto; border:none; border-radius:999px; background:#f2edff; color:#6b4de6; padding:8px 28px; font-size:11px; font-weight:900; cursor:pointer; }
+.sathi-lock-note{ text-align:center; font-size:11px; color:#7b8195; padding:8px 0 10px; background:#fff; }
+.sathi-powered{ grid-column:1 / -1; display:flex; align-items:center; justify-content:center; gap:4px; color:#8b90a4; font-size:12px; background:#fff; border-top:1px solid #f1f3f8; }
+.sathi-powered strong{ color:#6b4de6; }
+@media (max-width:860px){
+  .sathi-overlay{ padding:10px; }
+  .sathi-panel{ width:calc(100vw - 20px); height:calc(100vh - 20px); grid-template-columns:1fr; grid-template-rows:150px minmax(0,1fr) 30px; border-radius:16px; }
+  .sathi-left{ min-height:150px; }
+  .sathi-left-brand{ top:18px; left:18px; right:18px; }
+  .sathi-logo-stage{ display:none; }
+  .sathi-priya-card{ left:auto; width:48%; min-width:210px; height:150px; padding:42px 18px 18px; border-top-right-radius:0; border-top-left-radius:70px; }
+  .sathi-priya-card h2{ font-size:22px; }
+  .sathi-priya-card p,.sathi-left-stats{ display:none; }
+  .sathi-right{ padding:14px 14px 0; grid-template-rows:54px minmax(0,1fr) auto auto auto; }
+  .sathi-topbar{ padding-right:42px; }
+  .sathi-quickbar-row,.sathi-chips{ grid-template-columns:1fr; }
+}
 `;
