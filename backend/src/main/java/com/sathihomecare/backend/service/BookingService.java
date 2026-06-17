@@ -9,7 +9,6 @@ import com.sathihomecare.backend.entity.PatientDetails;
 import com.sathihomecare.backend.entity.ServiceEntity;
 import com.sathihomecare.backend.entity.User;
 import com.sathihomecare.backend.entity.enums.BookingStatus;
-import com.sathihomecare.backend.entity.enums.PaymentStatus;
 import com.sathihomecare.backend.entity.enums.Role;
 import com.sathihomecare.backend.exception.ResourceNotFoundException;
 import com.sathihomecare.backend.repository.AddressRepository;
@@ -40,15 +39,6 @@ public class BookingService {
     private final BookingReceiptService bookingReceiptService;
     private final BookingEmailService bookingEmailService;
     private final WhatsAppNotificationService whatsAppNotificationService;
-
-    @Transactional
-    public BookingResponse createBooking(String username, CreateBookingRequest request) {
-        User customer = getUserByUsername(username);
-        if (customer.getRole() != Role.CUSTOMER) {
-            throw new IllegalArgumentException("Only customers can create bookings");
-        }
-        return createBooking(request, customer);
-    }
 
     @Transactional
     public BookingResponse createGuestBooking(CreateBookingRequest request) {
@@ -93,34 +83,12 @@ public class BookingService {
         booking.setAdditionalNotes(request.getAdditionalNotes());
         booking.setTotalAmount(service.getPrice());
         booking.setBookingStatus(BookingStatus.PENDING);
-        booking.setPaymentStatus(PaymentStatus.NOT_REQUIRED);
 
         Booking savedBooking = bookingRepository.save(booking);
         byte[] receiptPdf = bookingReceiptService.generateReceipt(savedBooking);
         bookingEmailService.sendBookingReceipt(savedBooking, receiptPdf);
         whatsAppNotificationService.notifyBookingCreated(savedBooking);
         return toResponse(savedBooking);
-    }
-
-    @Transactional(readOnly = true)
-    public List<BookingResponse> getCustomerBookings(String username) {
-        User customer = getUserByUsername(username);
-        return bookingRepository.findByCustomer(customer).stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public BookingResponse getCustomerBookingById(String username, Long bookingId) {
-        User customer = getUserByUsername(username);
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
-
-        if (booking.getCustomer() == null || !booking.getCustomer().getId().equals(customer.getId())) {
-            throw new IllegalArgumentException("Booking does not belong to this customer");
-        }
-
-        return toResponse(booking);
     }
 
     @Transactional(readOnly = true)
@@ -148,27 +116,6 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
         return bookingReceiptService.generateReceipt(booking);
-    }
-
-    @Transactional
-    public BookingResponse cancelCustomerBooking(String username, Long bookingId) {
-        User customer = getUserByUsername(username);
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
-
-        if (booking.getCustomer() == null || !booking.getCustomer().getId().equals(customer.getId())) {
-            throw new IllegalArgumentException("You can only cancel your own bookings");
-        }
-
-        if (booking.getBookingStatus() == BookingStatus.COMPLETED) {
-            throw new IllegalArgumentException("Completed booking cannot be cancelled");
-        }
-
-        booking.setBookingStatus(BookingStatus.CANCELLED);
-        if (booking.getPaymentStatus() == PaymentStatus.PENDING) {
-            booking.setPaymentStatus(PaymentStatus.FAILED);
-        }
-        return toResponse(bookingRepository.save(booking));
     }
 
     @Transactional(readOnly = true)
@@ -256,7 +203,6 @@ public class BookingService {
                 .serviceDescription(booking.getService().getDescription())
                 .totalAmount(booking.getTotalAmount())
                 .bookingStatus(booking.getBookingStatus())
-                .paymentStatus(booking.getPaymentStatus())
                 .bookingDateTime(booking.getBookingDateTime())
                 .preferredDate(booking.getPreferredDate())
                 .preferredTimeSlot(booking.getPreferredTimeSlot())

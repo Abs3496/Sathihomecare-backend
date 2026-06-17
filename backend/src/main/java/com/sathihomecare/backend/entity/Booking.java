@@ -1,7 +1,6 @@
 package com.sathihomecare.backend.entity;
 
 import com.sathihomecare.backend.entity.enums.BookingStatus;
-import com.sathihomecare.backend.entity.enums.PaymentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -57,10 +56,6 @@ public class Booking extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus bookingStatus = BookingStatus.PENDING;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentStatus paymentStatus = PaymentStatus.NOT_REQUIRED;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;

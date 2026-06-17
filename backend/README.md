@@ -5,15 +5,14 @@ Phase 1 Java backend scaffold for the Sathi Homecare project.
 ## Included in Phase 1
 
 - Spring Boot + Spring Security + JWT setup
-- role-based auth for `CUSTOMER`, `PARTNER`, and `ADMIN`
-- customer registration and login
+- role-based auth for `PARTNER` and `ADMIN`
 - partner login by employee ID
 - admin login
 - public services catalog APIs
-- customer booking creation and booking history APIs
+- public guest booking creation, tracking, and receipt APIs
 - partner assigned-booking APIs
 - admin booking and partner overview APIs
-- UPI payment intent, UTR verification, payment proof upload, and optional Resend email confirmation
+- PDF receipt generation, customer/business email hooks, and WhatsApp notification hooks
 
 ## Tech Stack
 
@@ -48,10 +47,10 @@ Important environment variables:
 - `DB_PASSWORD`
 - `JWT_SECRET`
 - `JWT_EXPIRATION_MS`
-- `APP_PAYMENT_UPI_ID`
-- `APP_PAYMENT_MERCHANT_NAME`
-- `APP_PAYMENT_SUPPORT_WHATSAPP`
-- `APP_PAYMENT_PROOF_UPLOAD_DIR`
+- `APP_SUPPORT_WHATSAPP`
+- `APP_WHATSAPP_BUSINESS_NUMBER`
+- `APP_WHATSAPP_API_URL`
+- `APP_WHATSAPP_API_TOKEN`
 - `APP_EMAIL_FROM`
 - `APP_EMAIL_ADMIN_TO`
 - `RESEND_API_KEY`
@@ -69,49 +68,34 @@ Swagger should then be available at:
   - password: `adminabhishek@123`
 
 Partner accounts should be created by admin.
-Customer accounts should be created through the registration API or frontend signup flow.
+Customers do not create website accounts.
 
 ## Public APIs
 
 - `GET /api/health`
-- `POST /api/auth/register/customer`
-- `POST /api/auth/login/customer`
 - `POST /api/auth/login/partner`
 - `POST /api/auth/login/admin`
 - `GET /api/services`
 - `GET /api/services/{id}`
 - `GET /api/services/category/{category}`
-
-## Customer APIs
-
-Requires a customer JWT token.
-
-- `GET /api/customer/me`
-- `PUT /api/customer/me`
-- `POST /api/customer/bookings`
-- `GET /api/customer/bookings`
-- `DELETE /api/customer/bookings/{bookingId}`
-- `POST /api/payments/create-order`
-- `POST /api/payments/verify` as multipart form data with `bookingId`, `utrNumber`, `paymentApp`, optional `gatewayOrderId`, and optional `screenshot`
-- `POST /api/payments/fail`
+- `POST /api/bookings`
+- `GET /api/bookings/track?bookingId=SHC-2026-00001&mobileNumber=9876543210`
+- `GET /api/bookings/receipt?bookingId=SHC-2026-00001&mobileNumber=9876543210`
 
 Booking payload:
 
 ```json
 {
   "serviceId": 1,
-  "bookingDateTime": "2026-04-20T10:30:00",
-  "addressLineOne": "NH 344",
-  "addressLineTwo": "Near Main Gate",
-  "city": "Roorkee",
-  "state": "Uttarakhand",
-  "pincode": "247661",
-  "landmark": "Bhagwanpur Chowk",
   "patientName": "Ramesh",
-  "patientPhone": "9876543210",
   "patientAge": 67,
-  "patientAddress": "NH 344, Roorkee",
-  "patientIssues": "Post surgery recovery and medicine support"
+  "gender": "Male",
+  "mobileNumber": "9876543210",
+  "email": "customer@example.com",
+  "address": "NH 344, Roorkee",
+  "preferredDate": "2026-04-20",
+  "preferredTimeSlot": "10:00 AM - 12:00 PM",
+  "additionalNotes": "Post surgery recovery and medicine support"
 }
 ```
 
@@ -132,11 +116,5 @@ Requires an admin JWT token.
 - `GET /api/admin/bookings`
 - `PATCH /api/admin/bookings/{bookingId}/assign/{partnerUserId}`
 - `PATCH /api/admin/bookings/{bookingId}/status/{status}`
+- `GET /api/admin/bookings/{bookingId}/receipt`
 - `GET /api/admin/partners`
-
-## What Comes Next in Phase 2
-
-- partner creation and management APIs
-- customer profile APIs
-- richer admin analytics
-- frontend integration with real JWT and booking persistence

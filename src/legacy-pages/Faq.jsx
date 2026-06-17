@@ -5,7 +5,7 @@ import { usePageSeo } from "../hooks/usePageSeo";
 export default function Faq() {
   usePageSeo({
     title: "Frequently Asked Questions | Sathi Homecare",
-    description: "Answers to common questions about Sathi Homecare services, caregivers, booking, payments, counseling, cancellations, and long-term care.",
+    description: "Answers to common questions about Sathi Homecare services, caregivers, booking, scheduling, counseling, cancellations, and long-term care.",
     canonicalPath: "/faq"
   });
 
@@ -15,7 +15,7 @@ export default function Faq() {
         <p style={eyebrow}>Support Center</p>
         <h1 style={title}>SathiHomecare Frequently Asked Questions</h1>
         <p style={subtitle}>
-          Clear answers for families who want to understand services, bookings, safety, payments, counselling, and long-term care options before they book.
+          Clear answers for families who want to understand services, bookings, safety, scheduling, counselling, and long-term care options before they book.
         </p>
         <div style={heroActions}>
           <Link to="/" style={primaryLink}>Back to Home</Link>

@@ -26,7 +26,7 @@ public class WhatsAppNotificationService {
     @Value("${app.whatsapp.api-token:}")
     private String whatsappApiToken;
 
-    @Value("${app.whatsapp.business-number:${app.payment.support-whatsapp:918090806731}}")
+    @Value("${app.whatsapp.business-number:${app.support.whatsapp:918090806731}}")
     private String businessNumber;
 
     public void notifyBookingCreated(Booking booking) {

@@ -4,12 +4,11 @@ Sathi Homecare is a full-stack homecare booking platform with:
 
 - a React + Vite frontend
 - a Spring Boot backend
-- customer login and registration
 - partner and admin dashboards
 - service catalogue browsing
-- booking creation and tracking
+- direct customer booking without login or online payment
+- booking receipt download and tracking
 - admin partner/service management
-- direct UPI payment intents with UTR/proof verification endpoints
 
 ## Project Structure
 
@@ -64,7 +63,7 @@ http://localhost:8080/swagger-ui/index.html
 
 
 
-Customers sign up using the registration flow. Partner accounts are created by admin from the dashboard.
+Customers book directly from the website. Partner accounts are created by admin from the dashboard.
 
 ## Environment Notes
 
@@ -80,10 +79,10 @@ Backend environment values:
 - `DB_PASSWORD`
 - `JWT_SECRET`
 - `JWT_EXPIRATION_MS`
-- `APP_PAYMENT_UPI_ID`
-- `APP_PAYMENT_MERCHANT_NAME`
-- `APP_PAYMENT_SUPPORT_WHATSAPP`
-- `APP_PAYMENT_PROOF_UPLOAD_DIR`
+- `APP_SUPPORT_WHATSAPP`
+- `APP_WHATSAPP_BUSINESS_NUMBER`
+- `APP_WHATSAPP_API_URL`
+- `APP_WHATSAPP_API_TOKEN`
 - `APP_EMAIL_FROM`
 - `APP_EMAIL_ADMIN_TO`
 - `RESEND_API_KEY`
@@ -103,5 +102,5 @@ If the production MySQL database already exists, run these before the next backe
 ## Current Known Constraints
 
 - Checkout currently supports one service per booking.
-- Online payment uses UPI deep links, QR fallback, and post-payment UTR submission.
+- Customer booking is login-free and payment-free; staff confirms requests after submission.
 - Java 21 is the target baseline; the backend build now also enables Byte Buddy experimental mode during tests to behave better on newer JDKs.

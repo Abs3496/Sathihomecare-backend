@@ -97,7 +97,7 @@ export default function KnowFounders() {
         <p style={eyebrowSecondary}>Launch outlook</p>
         <h2 style={missionTitle}>Care that feels premium to families and operationally manageable for the team</h2>
         <p style={missionText}>
-          The launch goal is simple: verified services, secure booking and payment flows, stronger admin visibility, and a brand presentation that builds trust before the first call happens.
+          The launch goal is simple: verified services, quick booking, stronger admin visibility, and a brand presentation that builds trust before the first call happens.
         </p>
       </section>
     </div>

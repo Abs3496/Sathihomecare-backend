@@ -55,7 +55,6 @@ export default function Admin() {
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [editingPartnerId, setEditingPartnerId] = useState(null);
   const [bookingStatusFilter, setBookingStatusFilter] = useState("ALL");
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState("ALL");
   const [bookingSearch, setBookingSearch] = useState("");
 
   useEffect(() => {
@@ -102,10 +101,6 @@ export default function Admin() {
         bookingStatusFilter === "ALL" ||
         String(booking.rawStatus || booking.status).toUpperCase() === bookingStatusFilter;
 
-      const matchesPaymentStatus =
-        paymentStatusFilter === "ALL" ||
-        String(booking.paymentStatus || "").toUpperCase() === paymentStatusFilter;
-
       const matchesSearch =
         !searchTerm ||
         [
@@ -119,9 +114,9 @@ export default function Admin() {
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(searchTerm));
 
-      return matchesBookingStatus && matchesPaymentStatus && matchesSearch;
+      return matchesBookingStatus && matchesSearch;
     });
-  }, [bookingSearch, bookingStatusFilter, bookings, paymentStatusFilter]);
+  }, [bookingSearch, bookingStatusFilter, bookings]);
 
   const handleAdminLogin = async (event) => {
     event.preventDefault();
@@ -544,15 +539,6 @@ export default function Admin() {
               </select>
             </label>
             <label style={compactLabel}>
-              Payment Status
-              <select value={paymentStatusFilter} onChange={(event) => setPaymentStatusFilter(event.target.value)} style={inputStyle}>
-                <option value="ALL">All payments</option>
-                {["NOT_REQUIRED", "PENDING", "SUCCESS", "FAILED", "REFUNDED"].map((status) => (
-                  <option key={status} value={status}>{formatCategoryLabel(status)}</option>
-                ))}
-              </select>
-            </label>
-            <label style={compactLabel}>
               Search Booking
               <input
                 value={bookingSearch}
@@ -573,9 +559,6 @@ export default function Admin() {
                     <p style={{ margin: "6px 0 0", color: "#5b6878" }}>{booking.preferredDate} | {booking.preferredTimeSlot}</p>
                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
                       <span style={getStatusBadgeStyle(booking.status, "booking")}>{booking.status}</span>
-                      <span style={getStatusBadgeStyle(booking.paymentStatus, "payment")}>
-                        Payment: {formatCategoryLabel(booking.paymentStatus)}
-                      </span>
                       {booking.totalAmount ? (
                         <span style={amountBadge}>Rs. {booking.totalAmount}</span>
                       ) : null}
@@ -681,32 +664,8 @@ function formatCategoryLabel(category) {
     .join(" ");
 }
 
-function getStatusBadgeStyle(value, kind = "booking") {
+function getStatusBadgeStyle(value) {
   const normalized = String(value || "").toUpperCase();
-
-  if (kind === "payment") {
-    if (normalized === "SUCCESS") {
-      return {
-        ...badgeBase,
-        background: "#dcfce7",
-        color: "#166534"
-      };
-    }
-
-    if (normalized === "FAILED" || normalized === "REFUNDED") {
-      return {
-        ...badgeBase,
-        background: "#fee2e2",
-        color: "#b91c1c"
-      };
-    }
-
-    return {
-      ...badgeBase,
-      background: "#fef3c7",
-      color: "#92400e"
-    };
-  }
 
   if (normalized === "COMPLETED") {
     return {

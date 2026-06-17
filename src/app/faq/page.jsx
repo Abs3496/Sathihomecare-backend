@@ -2,7 +2,7 @@ import { faqItems } from "../../data/publicSiteData";
 
 export const metadata = {
   title: "Frequently Asked Questions",
-  description: "Answers about Sathi Homecare services, verified caregivers, booking, payments, cancellations and long-term care.",
+  description: "Answers about Sathi Homecare services, verified caregivers, booking, scheduling, cancellations and long-term care.",
   alternates: { canonical: "/faq" }
 };
 

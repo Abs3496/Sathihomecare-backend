@@ -15,7 +15,6 @@ import com.sathihomecare.backend.entity.ServiceEntity;
 import com.sathihomecare.backend.entity.User;
 import com.sathihomecare.backend.entity.enums.BookingStatus;
 import com.sathihomecare.backend.entity.enums.PartnerStatus;
-import com.sathihomecare.backend.entity.enums.PaymentStatus;
 import com.sathihomecare.backend.entity.enums.Role;
 import com.sathihomecare.backend.entity.enums.ServiceCategory;
 import com.sathihomecare.backend.repository.BookingRepository;
@@ -77,7 +76,6 @@ class BackendIntegrationTest {
                         ))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.bookingStatus").value("PENDING"))
-                .andExpect(jsonPath("$.paymentStatus").value("NOT_REQUIRED"))
                 .andExpect(jsonPath("$.customerName").value("Asha Kumari"))
                 .andExpect(jsonPath("$.customerMobile").value("9876543210"))
                 .andExpect(jsonPath("$.serviceName").value("Nursing Care"))
@@ -90,7 +88,6 @@ class BackendIntegrationTest {
         Booking saved = bookingRepository.findByBookingCodeIgnoreCase(bookingCode).orElseThrow();
         assertThat(saved.getCustomer()).isNull();
         assertThat(saved.getBookingStatus()).isEqualTo(BookingStatus.PENDING);
-        assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.NOT_REQUIRED);
     }
 
     @Test

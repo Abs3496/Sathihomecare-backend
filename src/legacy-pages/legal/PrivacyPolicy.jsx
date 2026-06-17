@@ -3,7 +3,7 @@ import LegalLayout from "./LegalLayout";
 const sections = [
   {
     title: "Information We Collect",
-    body: "We may collect the following information: Full Name, Contact Number, Address, Medical Requirements, and Payment Details."
+    body: "We may collect the following information: full name, contact number, email, address, service requirements, preferred booking date, preferred time slot, and medical notes shared for service delivery."
   },
   {
     title: "How Information Is Used",

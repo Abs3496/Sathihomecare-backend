@@ -1,7 +1,6 @@
 package com.sathihomecare.backend.service;
 
 import com.sathihomecare.backend.entity.Booking;
-import com.sathihomecare.backend.entity.Payment;
 import jakarta.mail.internet.MimeMessage;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,7 +35,7 @@ public class BookingEmailService {
     @Value("${app.email.admin-to:}")
     private String adminEmail;
 
-    @Value("${app.payment.support-whatsapp:918090806731}")
+    @Value("${app.support.whatsapp:918090806731}")
     private String supportWhatsapp;
 
     public void sendBookingReceipt(Booking booking, byte[] receiptPdf) {
@@ -59,30 +58,6 @@ public class BookingEmailService {
                     buildBusinessBookingHtml(booking),
                     receiptPdf,
                     fileName
-            );
-        }
-    }
-
-    public void sendPaymentConfirmation(Booking booking, Payment payment) {
-        if (!StringUtils.hasText(resendApiKey)) {
-            LOGGER.info("Resend API key not configured. Skipping confirmation email for booking {}", booking.getId());
-            return;
-        }
-
-        String customerEmail = booking.getCustomer().getEmail();
-        if (StringUtils.hasText(customerEmail)) {
-            sendEmail(
-                    customerEmail,
-                    "SATHIHOMECARE booking confirmation #" + booking.getId(),
-                    buildCustomerHtml(booking, payment)
-            );
-        }
-
-        if (StringUtils.hasText(adminEmail)) {
-            sendEmail(
-                    adminEmail,
-                    "New paid booking #" + booking.getId(),
-                    buildAdminHtml(booking, payment)
             );
         }
     }
@@ -161,47 +136,6 @@ public class BookingEmailService {
                   %s
                 </div>
                 """.formatted(buildBookingDetailsTable(booking));
-    }
-
-    private String buildCustomerHtml(Booking booking, Payment payment) {
-        return """
-                <div style="font-family:Arial,sans-serif;color:#102542;line-height:1.6">
-                  <h1 style="color:#102542">Booking confirmed</h1>
-                  <p>Thank you for choosing SATHIHOMECARE. Your payment proof has been recorded and your care request is now confirmed.</p>
-                  %s
-                  <p><strong>Need Help?</strong> Contact support on WhatsApp: <a href="https://wa.me/%s?text=I%%20need%%20help%%20with%%20booking%%20%s">Chat with support</a></p>
-                </div>
-                """.formatted(buildDetailsTable(booking, payment), supportWhatsapp, booking.getId());
-    }
-
-    private String buildAdminHtml(Booking booking, Payment payment) {
-        return """
-                <div style="font-family:Arial,sans-serif;color:#102542;line-height:1.6">
-                  <h1>New paid booking</h1>
-                  <p>A customer has submitted UPI payment details. Please verify the UTR and assign care staff.</p>
-                  %s
-                </div>
-                """.formatted(buildDetailsTable(booking, payment));
-    }
-
-    private String buildDetailsTable(Booking booking, Payment payment) {
-        return """
-                <table style="border-collapse:collapse;width:100%%;max-width:620px">
-                  <tr><td style="padding:8px;border:1px solid #e5e7eb">Booking ID</td><td style="padding:8px;border:1px solid #e5e7eb">#%s</td></tr>
-                  <tr><td style="padding:8px;border:1px solid #e5e7eb">Service</td><td style="padding:8px;border:1px solid #e5e7eb">%s</td></tr>
-                  <tr><td style="padding:8px;border:1px solid #e5e7eb">Patient</td><td style="padding:8px;border:1px solid #e5e7eb">%s</td></tr>
-                  <tr><td style="padding:8px;border:1px solid #e5e7eb">Amount</td><td style="padding:8px;border:1px solid #e5e7eb">Rs. %s</td></tr>
-                  <tr><td style="padding:8px;border:1px solid #e5e7eb">UTR</td><td style="padding:8px;border:1px solid #e5e7eb">%s</td></tr>
-                  <tr><td style="padding:8px;border:1px solid #e5e7eb">Support</td><td style="padding:8px;border:1px solid #e5e7eb">WhatsApp +%s</td></tr>
-                </table>
-                """.formatted(
-                booking.getId(),
-                escape(booking.getService().getName()),
-                escape(booking.getPatientDetails().getPatientName()),
-                payment.getAmount(),
-                escape(payment.getUtrNumber()),
-                supportWhatsapp
-        );
     }
 
     private String buildBookingDetailsTable(Booking booking) {

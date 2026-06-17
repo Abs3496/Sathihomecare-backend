@@ -40,7 +40,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/bookings/track", "/api/bookings/receipt").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/partner/**").hasRole("PARTNER")
-                .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
                 .requestMatchers(HttpMethod.GET, "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

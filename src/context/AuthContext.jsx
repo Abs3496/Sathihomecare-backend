@@ -2,7 +2,6 @@ import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { API_BASE_URL, apiFetch, authFetch } from "../api";
 import {
   createStoredSession,
-  getAuthErrorMessage,
   isTokenExpired,
   readStoredSession
 } from "../utils/authSession";
@@ -16,7 +15,6 @@ const initialPartners = [];
 
 const defaultSession = {
   token: null,
-  customer: null,
   partner: null,
   admin: null
 };
@@ -88,7 +86,6 @@ function normalizeBooking(response, customerEmail = "") {
     preferredTimeSlot: response.preferredTimeSlot || "",
     status: formatStatusLabel(response.bookingStatus),
     rawStatus: response.bookingStatus || "",
-    paymentStatus: response.paymentStatus || "",
     totalAmount: Number(response.totalAmount || 0),
     serviceId: response.serviceId,
     patientName: response.patientName || "",
@@ -147,24 +144,9 @@ export function AuthProvider({ children }) {
       throw new Error("Session refresh failed.");
     }
 
-    if (response.role === "CUSTOMER") {
-      return {
-        token: response.token,
-        customer: {
-          id: response.userId,
-          name: response.fullName,
-          email: response.email,
-          phone: response.phone
-        },
-        partner: null,
-        admin: null
-      };
-    }
-
     if (response.role === "PARTNER") {
       return {
         token: response.token,
-        customer: null,
         partner: {
           id: response.employeeId,
           employeeId: response.employeeId,
@@ -179,7 +161,6 @@ export function AuthProvider({ children }) {
 
     return {
       token: response.token,
-      customer: null,
       partner: null,
       admin: {
         id: response.userId,
@@ -284,88 +265,6 @@ export function AuthProvider({ children }) {
     return () => window.clearInterval(intervalId);
   }, [refreshAuthSession, session?.token]);
 
-  useEffect(() => {
-    if (!session.token || !session.customer) {
-      setBookings([]);
-      return;
-    }
-
-    let active = true;
-
-    const refresh = async () => {
-      try {
-        const bookingsResponse = await authFetch(session.token, "/customer/bookings");
-        if (!active) return;
-
-        setBookings(
-          bookingsResponse.map((item) => normalizeBooking(item, session.customer.email))
-        );
-      } catch (error) {
-        if (!active) return;
-        if (error?.status === 401 || error?.status === 403) {
-          logout();
-          return;
-        }
-        console.warn("Unable to refresh customer bookings", error);
-      }
-    };
-
-    refresh();
-
-    return () => {
-      active = false;
-    };
-  }, [logout, session.token, session.customer]);
-
-  const refreshCustomerBookings = useCallback(async (token = session.token, customerEmail = session.customer?.email || "") => {
-    if (!token) return [];
-
-    try {
-      const bookingsResponse = await authFetch(token, "/customer/bookings");
-      const normalized = bookingsResponse.map((item) => normalizeBooking(item, customerEmail));
-      setBookings(normalized);
-      return normalized;
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) {
-        logout();
-      }
-      console.warn("Unable to refresh customer bookings", error);
-      throw error;
-    }
-  }, [logout, session.customer?.email, session.token]);
-
-  const loginCustomer = async ({ email, password }) => {
-    const identifier = String(email || "").trim();
-    const response = await apiFetch("/auth/login/customer", {
-      method: "POST",
-      body: JSON.stringify({ emailOrPhone: identifier, password })
-    });
-
-    const nextSession = normalizeSessionFromAuthResponse(response);
-    setSession(nextSession);
-    setAttendance([]);
-    return nextSession.customer;
-  };
-
-  const registerCustomer = async ({ fullName, email, phone, password }) => {
-    const payload = {
-      fullName: String(fullName || "").trim(),
-      email: String(email || "").trim(),
-      phone: String(phone || "").trim(),
-      password
-    };
-
-    const response = await apiFetch("/auth/register/customer", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-
-    const nextSession = normalizeSessionFromAuthResponse(response);
-    setSession(nextSession);
-    setAttendance([]);
-    return nextSession.customer;
-  };
-
   const loginPartner = async ({ employeeId, password }) => {
     const identifier = String(employeeId || "").trim();
     const response = await apiFetch("/auth/login/partner", {
@@ -392,89 +291,6 @@ export function AuthProvider({ children }) {
     setBookings([]);
     setAttendance([]);
     return nextSession.admin;
-  };
-
-  const updateCustomerProfile = async ({ fullName, email, phone }) => {
-    if (!session.token) {
-      throw new Error("Please login before updating your profile.");
-    }
-
-    let response;
-    try {
-      response = await authFetch(session.token, "/customer/me", {
-        method: "PUT",
-        body: JSON.stringify({ fullName, email, phone })
-      });
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) logout();
-      throw new Error(getAuthErrorMessage(error, "Unable to update your profile."));
-    }
-
-    const customer = {
-      id: response.userId,
-      name: response.fullName,
-      email: response.email,
-      phone: response.phone
-    };
-
-    setSession((prev) => ({
-      ...prev,
-      customer
-    }));
-
-    return customer;
-  };
-
-  const addBooking = async (booking) => {
-    if (!session.token) {
-      throw new Error("Please login before placing a booking.");
-    }
-
-    const serviceList = await apiFetch("/services");
-    const normalizedName = String(booking.serviceName || booking.service || "").trim().toLowerCase();
-    const service = serviceList.find((item) => item.id === booking.serviceId)
-      || serviceList.find((item) => item.name?.trim?.().toLowerCase() === normalizedName);
-    if (!service) {
-      throw new Error(`Service not found in backend: ${booking.serviceName || booking.service}`);
-    }
-
-    const bookingDateTime = booking.bookingDateTime || (() => {
-      const nextDay = new Date();
-      nextDay.setDate(nextDay.getDate() + 1);
-      nextDay.setHours(10, 0, 0, 0);
-      return nextDay.toISOString();
-    })();
-
-    const payload = {
-      serviceId: service.id,
-      bookingDateTime,
-      addressLineOne: booking.addressLineOne,
-      addressLineTwo: booking.addressLineTwo || "",
-      city: booking.city,
-      state: booking.state,
-      pincode: booking.pincode,
-      landmark: booking.landmark || "",
-      patientName: booking.patientName,
-      patientPhone: booking.patientPhone,
-      patientAge: Number(booking.patientAge),
-      patientAddress: booking.patientAddress,
-      patientIssues: booking.patientIssues
-    };
-
-    let response;
-    try {
-      response = await authFetch(session.token, "/customer/bookings", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) logout();
-      throw new Error(getAuthErrorMessage(error, "Unable to create booking."));
-    }
-
-    const normalized = normalizeBooking(response, session.customer?.email || "");
-    setBookings((prev) => [normalized, ...prev]);
-    return normalized;
   };
 
   const fetchAdminPartners = useCallback(async (token = session.token) => {
@@ -731,23 +547,6 @@ export function AuthProvider({ children }) {
     return normalized;
   }, [session.token]);
 
-  const fetchCustomerProfile = useCallback(async (token = session.token) => {
-    if (!token) return null;
-
-    const response = await authFetch(token, "/customer/me");
-    const normalized = {
-      id: response.userId,
-      name: response.fullName,
-      email: response.email,
-      phone: response.phone
-    };
-    setSession((prev) => ({
-      ...prev,
-      customer: normalized
-    }));
-    return normalized;
-  }, [session.token]);
-
   const fetchPartnerBookings = useCallback(async (token = session.token) => {
     if (!token) return [];
 
@@ -792,84 +591,6 @@ export function AuthProvider({ children }) {
     return response;
   };
 
-  const createPaymentOrder = async (bookingId) => {
-    if (!session.token) {
-      throw new Error("Please login before initiating payment.");
-    }
-
-    try {
-      return await authFetch(session.token, "/payments/create-order", {
-        method: "POST",
-        body: JSON.stringify({ bookingId })
-      });
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) logout();
-      throw new Error(getAuthErrorMessage(error, "Unable to initiate payment."));
-    }
-  };
-
-  const verifyPayment = async ({
-    bookingId,
-    gatewayOrderId,
-    utrNumber,
-    paymentApp,
-    screenshot
-  }) => {
-    if (!session.token) {
-      throw new Error("Please login before verifying payment.");
-    }
-
-    let response;
-    try {
-      const payload = new FormData();
-      payload.append("bookingId", bookingId);
-      if (gatewayOrderId) payload.append("gatewayOrderId", gatewayOrderId);
-      payload.append("utrNumber", String(utrNumber || "").trim());
-      payload.append("paymentApp", paymentApp || "UPI");
-      if (screenshot) payload.append("screenshot", screenshot);
-
-      response = await authFetch(session.token, "/payments/verify", {
-        method: "POST",
-        body: payload
-      });
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) logout();
-      throw new Error(getAuthErrorMessage(error, "Payment verification failed."));
-    }
-
-    if (session.customer?.email) {
-      await refreshCustomerBookings(session.token, session.customer.email);
-    }
-
-    return response;
-  };
-
-  const markPaymentFailed = async ({
-    bookingId,
-    gatewayOrderId,
-    paymentReference = "",
-    failureReason
-  }) => {
-    if (!session.token) {
-      throw new Error("Please login before updating payment status.");
-    }
-
-    try {
-      return await authFetch(session.token, "/payments/fail", {
-        method: "POST",
-        body: JSON.stringify({
-          bookingId,
-          gatewayOrderId,
-          paymentReference,
-          failureReason
-        })
-      });
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) logout();
-      throw new Error(getAuthErrorMessage(error, "Unable to update failed payment status."));
-    }
-  };
-
   const updateBookingStatus = (id, status) => {
     setBookings((prev) => prev.map((booking) => (booking.id === id ? { ...booking, status } : booking)));
   };
@@ -880,26 +601,6 @@ export function AuthProvider({ children }) {
         booking.id === id ? { ...booking, assignedTo: partnerId, status: "Assigned" } : booking
       )
     );
-  };
-
-  const cancelBooking = async (id) => {
-    if (!session.token) {
-      throw new Error("Please login before cancelling a booking.");
-    }
-
-    let response;
-    try {
-      response = await authFetch(session.token, `/customer/bookings/${id}`, {
-        method: "DELETE"
-      });
-    } catch (error) {
-      if (error?.status === 401 || error?.status === 403) logout();
-      throw new Error(getAuthErrorMessage(error, "Unable to cancel booking."));
-    }
-
-    const normalized = normalizeBooking(response, session.customer?.email || "");
-    setBookings((prev) => prev.map((booking) => (booking.id === id ? normalized : booking)));
-    return normalized;
   };
 
   const togglePartnerStatus = () => {
@@ -924,7 +625,6 @@ export function AuthProvider({ children }) {
   };
 
   const value = {
-    customer: session.customer,
     partner: session.partner,
     admin: session.admin,
     token: session.token,

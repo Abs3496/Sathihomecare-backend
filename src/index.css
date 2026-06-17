@@ -226,18 +226,9 @@ h3 {
 .service-card-actions,
 .card,
 .profile-card-row,
-.partner-card-header,
-.gateway-info-card {
+.partner-card-header {
   flex-wrap: wrap;
   min-width: 0;
-}
-
-.upi-checkout-page small {
-  display: block;
-  margin-top: 4px;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .floating-whatsapp {
@@ -257,20 +248,6 @@ h3 {
   font-weight: 800;
   text-decoration: none;
   box-shadow: 0 18px 36px rgba(22, 163, 74, 0.28);
-}
-
-@media (max-width: 760px) {
-  .upi-checkout-page {
-    padding-top: 18px !important;
-  }
-
-  .upi-checkout-page .checkout-grid {
-    gap: 16px !important;
-  }
-
-  .upi-checkout-page aside {
-    position: static !important;
-  }
 }
 
 .card {

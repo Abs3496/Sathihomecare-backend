@@ -1,7 +1,6 @@
 package com.sathihomecare.backend.dto.booking;
 
 import com.sathihomecare.backend.entity.enums.BookingStatus;
-import com.sathihomecare.backend.entity.enums.PaymentStatus;
 import com.sathihomecare.backend.entity.enums.ServiceCategory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,7 +24,6 @@ public class BookingResponse {
     private String serviceDescription;
     private BigDecimal totalAmount;
     private BookingStatus bookingStatus;
-    private PaymentStatus paymentStatus;
     private LocalDateTime bookingDateTime;
     private LocalDate preferredDate;
     private String preferredTimeSlot;
