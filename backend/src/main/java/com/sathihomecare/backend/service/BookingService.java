@@ -24,12 +24,16 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BookingService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BookingService.class);
 
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
@@ -87,10 +91,20 @@ public class BookingService {
         booking.setPaymentStatus(PaymentStatus.NOT_REQUIRED);
 
         Booking savedBooking = bookingRepository.save(booking);
-        byte[] receiptPdf = bookingReceiptService.generateReceipt(savedBooking);
-        bookingEmailService.sendBookingReceipt(savedBooking, receiptPdf);
-        whatsAppNotificationService.notifyBookingCreated(savedBooking);
+        sendBookingNotifications(savedBooking);
         return toResponse(savedBooking);
+    }
+
+    private void sendBookingNotifications(Booking savedBooking) {
+        try {
+            byte[] receiptPdf = bookingReceiptService.generateReceipt(savedBooking);
+            bookingEmailService.sendBookingReceipt(savedBooking, receiptPdf);
+            whatsAppNotificationService.notifyBookingCreated(savedBooking);
+        } catch (RuntimeException error) {
+            LOGGER.warn("Booking {} was created, but receipt/notification failed: {}",
+                    savedBooking.getBookingCode(),
+                    error.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)
