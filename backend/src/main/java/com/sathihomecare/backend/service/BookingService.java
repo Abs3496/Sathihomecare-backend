@@ -9,6 +9,7 @@ import com.sathihomecare.backend.entity.PatientDetails;
 import com.sathihomecare.backend.entity.ServiceEntity;
 import com.sathihomecare.backend.entity.User;
 import com.sathihomecare.backend.entity.enums.BookingStatus;
+import com.sathihomecare.backend.entity.enums.PaymentStatus;
 import com.sathihomecare.backend.entity.enums.Role;
 import com.sathihomecare.backend.exception.ResourceNotFoundException;
 import com.sathihomecare.backend.repository.AddressRepository;
@@ -83,6 +84,7 @@ public class BookingService {
         booking.setAdditionalNotes(request.getAdditionalNotes());
         booking.setTotalAmount(service.getPrice());
         booking.setBookingStatus(BookingStatus.PENDING);
+        booking.setPaymentStatus(PaymentStatus.NOT_REQUIRED);
 
         Booking savedBooking = bookingRepository.save(booking);
         byte[] receiptPdf = bookingReceiptService.generateReceipt(savedBooking);
