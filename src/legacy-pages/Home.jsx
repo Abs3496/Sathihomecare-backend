@@ -64,7 +64,7 @@ const mixedServices = [...servicesData.nursing.slice(0, 4), ...servicesData.ther
 export default function Home() {
   usePageSeo({
     title: "Sathi Homecare Lucknow | Home Nursing, Ayurvedic Therapy and Counselling Services",
-    description: "Sathi Homecare offers trusted home nursing, ayurvedic therapy, counselling and elder care services in Lucknow with secure booking and responsive support.",
+    description: "Sathi Homecare offers trusted home nursing, ayurvedic therapy, counselling and elder care services in Lucknow with quick booking and responsive support.",
     keywords: "Sathi Homecare Lucknow, home nursing Lucknow, ayurvedic therapy Lucknow, counselling services Lucknow, patient care at home Lucknow, elder care Lucknow",
     canonicalPath: "/",
     image: homepageAssets.heroBanner
@@ -72,7 +72,7 @@ export default function Home() {
 
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart } = useCart();
-  const { customer, partner, logout } = useAuth();
+  const { partner, logout } = useAuth();
   const [location, setLocation] = useState("");
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -95,7 +95,7 @@ export default function Home() {
     if (event.key === "Enter") handleSearch();
   };
   const getQty = (id) => cart.find((item) => item.id === id)?.quantity || 0;
-  const dashboardPath = customer ? "/user/dashboard" : partner ? "/partner/dashboard" : "/login";
+  const dashboardPath = partner ? "/partner/dashboard" : "/partner/login";
 
   useEffect(() => {
     if (location.trim().length < 3) {
@@ -251,11 +251,12 @@ export default function Home() {
             <div style={{ display: "flex", alignItems: "center", gap: "18px", flexWrap: "wrap" }} className={`hero-nav-group ${isMenuOpen ? "is-open" : ""}`}>
               <Link to="/blogs" style={heroNavLink} onClick={() => setIsMenuOpen(false)}>Blogs</Link>
               <Link to="/founders" style={heroNavLink} onClick={() => setIsMenuOpen(false)}>Know the Founders</Link>
-              <Link to="/login" style={loginLink} onClick={() => setIsMenuOpen(false)}>Login As</Link>
+              <Link to="/track-booking" style={heroNavLink} onClick={() => setIsMenuOpen(false)}>Track Booking</Link>
+              <Link to="/partner/login" style={loginLink} onClick={() => setIsMenuOpen(false)}>Staff Login</Link>
               <Link to={dashboardPath} style={avatarLink} onClick={() => setIsMenuOpen(false)}>
-                {customer?.name?.charAt(0) || partner?.name?.charAt(0) || "U"}
+                {partner?.name?.charAt(0) || "S"}
               </Link>
-              {customer || partner ? (
+              {partner ? (
                 <button type="button" onClick={() => { logout(); setIsMenuOpen(false); }} style={logoutButton}>
                   Logout
                 </button>
@@ -481,7 +482,7 @@ export default function Home() {
         </section>
       ) : null}
 
-      <SectionShell title="Frequently asked questions" subtitle="Straight answers about services, bookings, safety, payments, counselling, and long-term care.">
+      <SectionShell title="Frequently asked questions" subtitle="Straight answers about services, bookings, safety, counselling, and long-term care.">
         <div style={{ display: "grid", gap: "14px" }}>
           {faqData.slice(0, 5).map((item, index) => (
             <article key={item.question} style={{ background: "#ffffff", borderRadius: "20px", padding: "18px 20px", border: "1px solid #ececec", boxShadow: "0 14px 28px rgba(15, 23, 42, 0.05)", display: "grid", gridTemplateColumns: "56px minmax(0, 1fr)", gap: "14px" }} className="faq-preview-card">

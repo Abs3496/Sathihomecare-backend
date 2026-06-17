@@ -2,10 +2,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./legacy-pages/Home";
 import Services from "./legacy-pages/Services";
 import Checkout from "./legacy-pages/Checkout";
-import Login from "./legacy-pages/Login";
+import ThankYou from "./legacy-pages/ThankYou";
+import TrackBooking from "./legacy-pages/TrackBooking";
 import PartnerLogin from "./legacy-pages/partner/PartnerLogin";
 import PartnerDashboard from "./legacy-pages/partner/PartnerDashboard";
-import UserDashboard from "./legacy-pages/user/UserDashboard";
 import Admin from "./legacy-pages/Admin";
 import KnowFounders from "./legacy-pages/KnowFounders";
 import PrivacyPolicy from "./legacy-pages/legal/PrivacyPolicy";
@@ -26,7 +26,6 @@ function App() {
         <main className="app-main">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/partner/login" element={<PartnerLogin />} />
             <Route path="/services" element={<Services />} />
@@ -34,17 +33,11 @@ function App() {
             <Route path="/faq" element={<Faq />} />
             <Route path="/founders" element={<KnowFounders />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/thank-you" element={<ThankYou />} />
+            <Route path="/track-booking" element={<TrackBooking />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/refund-cancellation-policy" element={<RefundPolicy />} />
-            <Route
-              path="/user/dashboard"
-              element={
-                <ProtectedRoute role="customer">
-                  <UserDashboard />
-                </ProtectedRoute>
-              }
-            />
             <Route
               path="/partner/dashboard"
               element={

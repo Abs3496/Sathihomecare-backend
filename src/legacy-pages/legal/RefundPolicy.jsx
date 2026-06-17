@@ -3,7 +3,7 @@ import LegalLayout from "./LegalLayout";
 const sections = [
   {
     title: "Cancellation Policy",
-    body: "24+ hours before service: 90% refund with 10% processing fee applicable. 12 to 24 hours before service: 70% refund. 6 to 12 hours before service: 50% refund. Less than 6 hours before service: no refund."
+    body: "If a paid service is cancelled after confirmation, refund eligibility depends on the confirmed service terms and cancellation timing shared by SATHIHOMECARE."
   },
   {
     title: "After Service Commencement",

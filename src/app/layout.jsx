@@ -98,7 +98,7 @@ export default function RootLayout({ children }) {
 function Footer() {
   const columns = [
     ["Company", [["Home", "/"], ["Services", "/services"], ["Blogs", "/blogs"], ["FAQ", "/faq"], ["Founders", "/founders"]]],
-    ["Contact", [["Help & Support", "/faq"], ["Customer Login", "/login"], ["Partner Login", "/partner/login"], ["Admin Login", "/admin"]]],
+    ["Contact", [["Help & Support", "/faq"], ["Track Booking", "/track-booking"], ["Partner Login", "/partner/login"], ["Admin Login", "/admin"]]],
     ["Legal", [["Terms", "/terms-conditions"], ["Privacy", "/privacy-policy"], ["Refunds", "/refund-cancellation-policy"]]],
     ["Available", [["Lucknow", "/services"], ["Ranchi", "/services"], ["Patna", "/services"], ["Delhi", "/services"]]]
   ];

@@ -1,6 +1,7 @@
 package com.sathihomecare.backend.entity.enums;
 
 public enum BookingStatus {
+    PENDING,
     PENDING_PAYMENT,
     PENDING_ASSIGNMENT,
     ASSIGNED,

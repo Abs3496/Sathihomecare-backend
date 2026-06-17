@@ -36,6 +36,8 @@ public class SecurityConfig {
                     "/api/services/**",
                     "/api/health"
                 ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/bookings", "/api/bookings/create").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/bookings/track", "/api/bookings/receipt").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/partner/**").hasRole("PARTNER")
                 .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
@@ -62,7 +64,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(resolveAllowedOrigins());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
-        configuration.setExposedHeaders(List.of("Content-Type", "X-Request-Id"));
+        configuration.setExposedHeaders(List.of("Content-Type", "Content-Disposition", "X-Request-Id"));
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
 

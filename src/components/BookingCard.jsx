@@ -4,9 +4,7 @@ export default function BookingCard({
   onAccept,
   onReject,
   onComplete,
-  onCancel,
-  onPayNow,
-  paymentLoading = false
+  onCancel
 }) {
   return (
     <article
@@ -54,18 +52,11 @@ export default function BookingCard({
 
       <div style={{ display: "grid", gap: "8px", marginTop: "16px", color: "#475569" }}>
         <span>Address: {booking.address}</span>
-        <span>Date & Time: {booking.date}</span>
+        <span>Date & Time: {booking.preferredDate || booking.date}{booking.preferredTimeSlot ? ` | ${booking.preferredTimeSlot}` : ""}</span>
         {booking.totalAmount ? <span>Amount: Rs. {booking.totalAmount}</span> : null}
-        {booking.paymentStatus ? <span>Payment: {formatLabel(booking.paymentStatus)}</span> : null}
         {booking.patientName ? <span>Patient: {booking.patientName}</span> : null}
         {booking.patientIssues ? <span>Issue: {booking.patientIssues}</span> : null}
       </div>
-
-      {role === "customer" && booking.paymentStatus === "PENDING" ? (
-        <p style={{ margin: "14px 0 0", color: "#b45309", fontWeight: 700, lineHeight: 1.6 }}>
-          Payment is still pending for this booking. Complete payment from checkout before admin can assign an employee.
-        </p>
-      ) : null}
 
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "18px" }}>
         {role === "partner" && booking.status === "Assigned" ? (
@@ -86,32 +77,9 @@ export default function BookingCard({
             Cancel Booking
           </button>
         ) : null}
-
-        {role === "customer" && booking.paymentStatus === "PENDING" ? (
-          <button
-            type="button"
-            onClick={() => onPayNow?.(booking)}
-            disabled={paymentLoading}
-            style={{
-              ...primaryButton,
-              opacity: paymentLoading ? 0.7 : 1,
-              cursor: paymentLoading ? "not-allowed" : "pointer"
-            }}
-          >
-            {paymentLoading ? "Processing..." : "Pay Now"}
-          </button>
-        ) : null}
       </div>
     </article>
   );
-}
-
-function formatLabel(value) {
-  return String(value || "")
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 }
 
 const primaryButton = {

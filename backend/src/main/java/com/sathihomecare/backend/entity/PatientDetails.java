@@ -21,9 +21,12 @@ public class PatientDetails extends BaseEntity {
     @Column(nullable = false)
     private Integer patientAge;
 
+    @Column(nullable = false)
+    private String gender;
+
     @Column(nullable = false, length = 1000)
     private String patientAddress;
 
-    @Column(nullable = false, length = 2000)
+    @Column(length = 2000)
     private String patientIssues;
 }

@@ -1,6 +1,6 @@
 const viteEnv = typeof import.meta !== "undefined" ? import.meta.env || {} : {};
 const processEnv = typeof process !== "undefined" ? process.env || {} : {};
-const API_BASE_URL = (
+export const API_BASE_URL = (
   processEnv.NEXT_PUBLIC_API_BASE_URL
   || viteEnv.VITE_API_BASE_URL
   || "https://sathihomecare-backend.onrender.com/api"

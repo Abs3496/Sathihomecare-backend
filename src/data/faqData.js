@@ -30,9 +30,9 @@ export const faqData = [
       "Yes. If you are not satisfied with the assigned caregiver or service experience, you can request a replacement."
   },
   {
-    question: "What payment options are available?",
+    question: "Is online payment required?",
     answer:
-      "We support online payments such as UPI, cards, and net banking. Cash may also be available in selected cases."
+      "No. Customers can submit a booking without online payment. Our team confirms the request and next steps after submission."
   },
   {
     question: "Are your services safe?",

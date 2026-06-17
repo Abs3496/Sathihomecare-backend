@@ -1,5 +1,5 @@
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import { apiFetch, authFetch } from "../api";
+import { API_BASE_URL, apiFetch, authFetch } from "../api";
 import {
   createStoredSession,
   getAuthErrorMessage,
@@ -77,11 +77,15 @@ function formatBookingDate(dateString) {
 function normalizeBooking(response, customerEmail = "") {
   return {
     id: response.id,
+    bookingCode: response.bookingCode || (response.id ? `SHC-${response.id}` : ""),
     customer: response.customerName || "",
-    customerEmail,
+    customerEmail: response.customerEmail || customerEmail,
+    customerMobile: response.customerMobile || "",
     service: response.serviceName || "",
     address: response.fullAddress || "",
-    date: formatBookingDate(response.bookingDateTime),
+    date: response.preferredDate || formatBookingDate(response.bookingDateTime),
+    preferredDate: response.preferredDate || "",
+    preferredTimeSlot: response.preferredTimeSlot || "",
     status: formatStatusLabel(response.bookingStatus),
     rawStatus: response.bookingStatus || "",
     paymentStatus: response.paymentStatus || "",
@@ -90,7 +94,9 @@ function normalizeBooking(response, customerEmail = "") {
     patientName: response.patientName || "",
     patientPhone: response.patientPhone || "",
     patientAge: response.patientAge?.toString?.() || "",
+    patientGender: response.patientGender || "",
     patientIssues: response.patientIssues || "",
+    additionalNotes: response.additionalNotes || "",
     partnerId: response.partnerId,
     partnerName: response.partnerName || "",
     partnerEmployeeId: response.partnerEmployeeId || ""
@@ -648,6 +654,60 @@ export function AuthProvider({ children }) {
     return normalized;
   };
 
+  const downloadAdminReceipt = async (bookingId) => {
+    if (!session.token) {
+      throw new Error("Please login as admin before downloading receipts.");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/admin/bookings/${bookingId}/receipt`, {
+      headers: {
+        Authorization: `Bearer ${session.token}`
+      }
+    });
+    if (!response.ok) {
+      throw new Error("Unable to download receipt.");
+    }
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = `booking-${bookingId}-receipt.pdf`;
+    link.click();
+    URL.revokeObjectURL(objectUrl);
+  };
+
+  const createPublicBooking = async (booking) => {
+    const response = await apiFetch("/bookings", {
+      method: "POST",
+      body: JSON.stringify({
+        serviceId: booking.serviceId,
+        patientName: booking.patientName,
+        patientAge: Number(booking.patientAge),
+        gender: booking.gender,
+        mobileNumber: booking.mobileNumber,
+        email: booking.email,
+        address: booking.address,
+        serviceType: booking.serviceType,
+        preferredDate: booking.preferredDate,
+        preferredTimeSlot: booking.preferredTimeSlot,
+        additionalNotes: booking.additionalNotes || ""
+      })
+    });
+
+    return normalizeBooking(response, booking.email);
+  };
+
+  const trackPublicBooking = async ({ bookingId, mobileNumber }) => {
+    const params = new URLSearchParams({ bookingId, mobileNumber });
+    const response = await apiFetch(`/bookings/track?${params.toString()}`);
+    return normalizeBooking(response);
+  };
+
+  const getReceiptUrl = ({ bookingId, mobileNumber }) => {
+    const params = new URLSearchParams({ bookingId, mobileNumber });
+    return `${API_BASE_URL}/bookings/receipt?${params.toString()}`;
+  };
+
   const fetchAdminAttendance = useCallback(async (token = session.token) => {
     if (!token) return [];
 
@@ -873,19 +933,13 @@ export function AuthProvider({ children }) {
     bookings,
     services,
     attendance,
-    loginCustomer,
-    registerCustomer,
     loginPartner,
     loginAdmin,
     logout,
-    updateCustomerProfile,
-    fetchCustomerProfile,
-    addBooking,
-    createPaymentOrder,
-    verifyPayment,
-    markPaymentFailed,
+    createPublicBooking,
+    trackPublicBooking,
+    getReceiptUrl,
     refreshAuthSession,
-    refreshCustomerBookings,
     fetchAdminPartners,
     fetchAdminBookings,
     fetchAdminServices,
@@ -896,6 +950,7 @@ export function AuthProvider({ children }) {
     deleteAdminService,
     assignAdminBooking,
     updateAdminBookingStatus,
+    downloadAdminReceipt,
     fetchAdminAttendance,
     fetchCurrentPartnerProfile,
     fetchPartnerBookings,
@@ -904,7 +959,6 @@ export function AuthProvider({ children }) {
     markPartnerAttendance,
     updateBookingStatus,
     assignBooking,
-    cancelBooking,
     togglePartnerStatus,
     addPartner
   };

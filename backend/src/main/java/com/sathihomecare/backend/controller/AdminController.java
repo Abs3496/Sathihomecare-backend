@@ -15,7 +15,9 @@ import com.sathihomecare.backend.service.ServiceCatalogService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,6 +58,15 @@ public class AdminController {
             @PathVariable BookingStatus status
     ) {
         return bookingService.adminUpdateBookingStatus(bookingId, status);
+    }
+
+    @GetMapping("/bookings/{bookingId}/receipt")
+    public ResponseEntity<byte[]> downloadReceipt(@PathVariable Long bookingId) {
+        byte[] pdf = bookingService.generateAdminReceipt(bookingId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"booking-" + bookingId + "-receipt.pdf\"")
+                .body(pdf);
     }
 
     @GetMapping("/partners")

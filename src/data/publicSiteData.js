@@ -13,7 +13,8 @@ export const navLinks = [
   ["Blogs", "/blogs"],
   ["FAQ", "/faq"],
   ["Founders", "/founders"],
-  ["Login", "/login"]
+  ["Book Service", "/checkout"],
+  ["Track Booking", "/track-booking"]
 ];
 
 export const publicServices = [
@@ -87,8 +88,8 @@ export const cityList = ["Lucknow", "Ranchi", "Patna", "Delhi", "Kolkata", "Mumb
 export const faqItems = [
   ["What is Sathi Homecare?", "Sathi Homecare is a home healthcare platform for nursing care, elderly care, patient support, ayurvedic therapy and counselling."],
   ["Are caregivers verified?", "Yes. Our caregivers are background verified, trained and reviewed before being assigned to family care work."],
-  ["How can I book a service?", "Choose a service, share patient and address details, then complete booking through the website or support team."],
-  ["Is online payment supported?", "Yes. Online payment through UPI, cards and net banking can be supported where checkout is enabled."],
+  ["How can I book a service?", "Choose a service, share patient and address details, pick a preferred date and time slot, then submit the booking without login."],
+  ["Is online payment required?", "No. The website booking flow does not require online payment. Our team will confirm details after the request is submitted."],
   ["Do you provide long-term care?", "Yes. Families can request daily, weekly or monthly care plans depending on patient needs and availability."]
 ];
 
@@ -121,7 +122,7 @@ export const legalPages = {
     title: "Privacy Policy",
     description: "How Sathi Homecare handles customer information for care coordination, support and service delivery.",
     sections: [
-      ["Information We Collect", "We may collect full name, contact number, address, medical requirements and payment details for service delivery."],
+      ["Information We Collect", "We may collect full name, contact number, email, address and medical requirements for service delivery."],
       ["How Information Is Used", "Information is used for care coordination, customer support, internal analytics and operational improvement."],
       ["Data Sharing", "Data is shared only when needed for service delivery or when required by law."],
       ["Data Security", "We use reasonable safeguards, but no internet transmission can be guaranteed as absolutely secure."]
@@ -132,7 +133,7 @@ export const legalPages = {
     description: "General terms for using Sathi Homecare services.",
     sections: [
       ["Nature of Services", "Sathi Homecare provides supportive home healthcare services and is not a hospital or emergency medical authority."],
-      ["Booking and Payment", "Bookings may require advance payment and can be accepted, rejected or rescheduled based on service availability."],
+      ["Booking Confirmation", "Bookings can be accepted, rejected or rescheduled based on service availability and operational review."],
       ["Service Modifications", "Assigned staff, service schedules and pricing may be modified with prior notice where applicable."],
       ["Jurisdiction", "Disputes are subject to Lucknow, Uttar Pradesh, India jurisdiction."]
     ]

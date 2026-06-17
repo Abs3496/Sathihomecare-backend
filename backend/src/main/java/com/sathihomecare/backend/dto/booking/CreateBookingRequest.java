@@ -1,11 +1,10 @@
 package com.sathihomecare.backend.dto.booking;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,40 +16,50 @@ public class CreateBookingRequest {
     private Long serviceId;
 
     @NotNull
-    @Future
-    private LocalDateTime bookingDateTime;
+    private LocalDate preferredDate;
 
     @NotBlank
-    private String addressLineOne;
-
-    private String addressLineTwo;
-
-    @NotBlank
-    private String city;
-
-    @NotBlank
-    private String state;
-
-    @NotBlank
-    @Pattern(regexp = "^[0-9]{6}$", message = "must be a valid 6 digit pincode")
-    private String pincode;
-
-    private String landmark;
+    private String preferredTimeSlot;
 
     @NotBlank
     private String patientName;
-
-    @NotBlank
-    @Pattern(regexp = "^[0-9]{10}$", message = "must be a valid 10 digit phone number")
-    private String patientPhone;
 
     @NotNull
     @Min(1)
     private Integer patientAge;
 
     @NotBlank
-    private String patientAddress;
+    private String gender;
 
     @NotBlank
+    @Pattern(regexp = "^[0-9]{10}$", message = "must be a valid 10 digit mobile number")
+    private String mobileNumber;
+
+    @NotBlank
+    private String email;
+
+    @NotBlank
+    private String address;
+
+    private String additionalNotes;
+
+    private String serviceType;
+
+    private String addressLineOne;
+
+    private String addressLineTwo;
+
+    private String city;
+
+    private String state;
+
+    private String pincode;
+
+    private String landmark;
+
+    private String patientPhone;
+
+    private String patientAddress;
+
     private String patientIssues;
 }

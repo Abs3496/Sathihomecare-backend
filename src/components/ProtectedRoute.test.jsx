@@ -22,7 +22,7 @@ function renderProtectedRoute(role) {
             </ProtectedRoute>
           )}
         />
-        <Route path="/login" element={<div>Login Page</div>} />
+        <Route path="/checkout" element={<div>Checkout Page</div>} />
         <Route path="/partner/login" element={<div>Partner Login Page</div>} />
         <Route path="/admin" element={<div>Admin Login Page</div>} />
       </Routes>
@@ -31,12 +31,12 @@ function renderProtectedRoute(role) {
 }
 
 describe("ProtectedRoute", () => {
-  it("redirects logged-out customers to login", () => {
+  it("redirects logged-out customers to checkout", () => {
     mockUseAuth.mockReturnValue({ customer: null, partner: null, admin: null, token: null });
 
     renderProtectedRoute("customer");
 
-    expect(screen.getByText("Login Page")).toBeInTheDocument();
+    expect(screen.getByText("Checkout Page")).toBeInTheDocument();
   });
 
   it("redirects logged-out partners to partner login", () => {
@@ -55,11 +55,11 @@ describe("ProtectedRoute", () => {
     expect(screen.getByText("Admin Login Page")).toBeInTheDocument();
   });
 
-  it("renders children when role is authenticated", () => {
+  it("redirects customer protected routes to checkout even with a token", () => {
     mockUseAuth.mockReturnValue({ customer: { name: "Asha" }, partner: null, admin: null, token: "test-token" });
 
     renderProtectedRoute("customer");
 
-    expect(screen.getByText("Allowed Content")).toBeInTheDocument();
+    expect(screen.getByText("Checkout Page")).toBeInTheDocument();
   });
 });

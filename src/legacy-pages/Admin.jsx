@@ -20,6 +20,7 @@ export default function Admin() {
     addPartner,
     assignAdminBooking,
     updateAdminBookingStatus,
+    downloadAdminReceipt,
     fetchAdminPartners,
     fetchAdminBookings,
     fetchAdminServices,
@@ -537,7 +538,7 @@ export default function Admin() {
               Booking Status
               <select value={bookingStatusFilter} onChange={(event) => setBookingStatusFilter(event.target.value)} style={inputStyle}>
                 <option value="ALL">All bookings</option>
-                {["PENDING_PAYMENT", "PENDING_ASSIGNMENT", "ASSIGNED", "ACCEPTED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "REJECTED"].map((status) => (
+                {["PENDING", "ASSIGNED", "ACCEPTED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "REJECTED"].map((status) => (
                   <option key={status} value={status}>{formatCategoryLabel(status)}</option>
                 ))}
               </select>
@@ -546,7 +547,7 @@ export default function Admin() {
               Payment Status
               <select value={paymentStatusFilter} onChange={(event) => setPaymentStatusFilter(event.target.value)} style={inputStyle}>
                 <option value="ALL">All payments</option>
-                {["PENDING", "SUCCESS", "FAILED", "REFUNDED"].map((status) => (
+                {["NOT_REQUIRED", "PENDING", "SUCCESS", "FAILED", "REFUNDED"].map((status) => (
                   <option key={status} value={status}>{formatCategoryLabel(status)}</option>
                 ))}
               </select>
@@ -567,8 +568,9 @@ export default function Admin() {
                 <div key={booking.id} style={bookingCard}>
                   <div>
                     <h3 style={{ margin: 0, color: "#102542" }}>{booking.service}</h3>
-                    <p style={{ margin: "8px 0 0", color: "#5b6878" }}>{booking.customer} | {booking.address}</p>
-                    <p style={{ margin: "6px 0 0", color: "#5b6878" }}>{booking.date}</p>
+                    <p style={{ margin: "8px 0 0", color: "#5b6878" }}>{booking.bookingCode} | {booking.customer} | {booking.customerMobile}</p>
+                    <p style={{ margin: "6px 0 0", color: "#5b6878" }}>{booking.address}</p>
+                    <p style={{ margin: "6px 0 0", color: "#5b6878" }}>{booking.preferredDate} | {booking.preferredTimeSlot}</p>
                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
                       <span style={getStatusBadgeStyle(booking.status, "booking")}>{booking.status}</span>
                       <span style={getStatusBadgeStyle(booking.paymentStatus, "payment")}>
@@ -604,14 +606,17 @@ export default function Admin() {
                       ))}
                     </select>
                     <select
-                      value={booking.status}
+                      value={booking.rawStatus || String(booking.status || "").toUpperCase().replaceAll(" ", "_")}
                       onChange={(event) => updateAdminBookingStatus(booking.id, event.target.value)}
                       style={selectStyle}
                     >
-                      {["Pending Payment", "Pending Assignment", "Assigned", "Accepted", "In Progress", "Completed", "Cancelled", "Rejected"].map((status) => (
-                        <option key={status} value={status}>{status}</option>
+                      {["PENDING", "ASSIGNED", "ACCEPTED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "REJECTED"].map((status) => (
+                        <option key={status} value={status}>{formatCategoryLabel(status)}</option>
                       ))}
                     </select>
+                    <button type="button" onClick={() => downloadAdminReceipt(booking.id)} style={secondaryGhostButton}>
+                      Download Receipt
+                    </button>
                   </div>
                 </div>
               ))
@@ -623,7 +628,7 @@ export default function Admin() {
             ) : (
               <EmptyStateCard
                 title="No customer bookings yet"
-                message="Bookings will appear here after customers register, choose services, and complete payment."
+                message="Bookings will appear here after customers choose services and submit the direct booking form."
               />
             )}
           </div>

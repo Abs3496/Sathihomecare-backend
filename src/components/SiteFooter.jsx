@@ -7,14 +7,13 @@ const companyLinks = [
   ["Blogs", "/blogs"],
   ["FAQs", "/faq"],
   ["Founders", "/founders"],
-  ["Login", "/login"],
-  ["Checkout", "/checkout"]
+  ["Book Service", "/checkout"],
+  ["Track Booking", "/track-booking"]
 ];
 
 const contactLinks = [
   ["Help & Support", "/faq"],
   ["Partner Login", "/partner/login"],
-  ["Customer Login", "/login"],
   ["Admin Login", "/admin"]
 ];
 

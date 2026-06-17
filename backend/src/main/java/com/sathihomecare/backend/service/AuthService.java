@@ -130,10 +130,7 @@ public class AuthService {
                         return loginAdmin(adminRequest);
                     }
 
-                    CustomerLoginRequest customerRequest = new CustomerLoginRequest();
-                    customerRequest.setEmailOrPhone(identifier);
-                    customerRequest.setPassword(password);
-                    return loginCustomer(customerRequest);
+                    throw new IllegalArgumentException("Invalid credentials");
                 })
                 .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
     }

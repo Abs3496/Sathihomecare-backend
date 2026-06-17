@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,9 +22,21 @@ import lombok.Setter;
 @Table(name = "bookings")
 public class Booking extends BaseEntity {
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @Column(nullable = false, unique = true, length = 20)
+    private String bookingCode;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
     private User customer;
+
+    @Column(nullable = false)
+    private String customerName;
+
+    @Column(nullable = false)
+    private String customerMobile;
+
+    @Column(nullable = false)
+    private String customerEmail;
 
     @ManyToOne
     @JoinColumn(name = "partner_id")
@@ -43,15 +56,24 @@ public class Booking extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private BookingStatus bookingStatus = BookingStatus.PENDING_PAYMENT;
+    private BookingStatus bookingStatus = BookingStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    private PaymentStatus paymentStatus = PaymentStatus.NOT_REQUIRED;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
     @Column(nullable = false)
     private LocalDateTime bookingDateTime;
+
+    @Column(nullable = false)
+    private LocalDate preferredDate;
+
+    @Column(nullable = false)
+    private String preferredTimeSlot;
+
+    @Column(length = 2000)
+    private String additionalNotes;
 }

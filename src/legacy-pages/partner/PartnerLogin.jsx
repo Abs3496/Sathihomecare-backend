@@ -42,7 +42,7 @@ export default function PartnerLogin() {
   return (
     <div style={pageStyle} className="page-padding">
       <div style={cardStyle}>
-        <Link to="/login" style={backLink}>Back to Login As</Link>
+        <Link to="/" style={backLink}>Back to Home</Link>
         <p style={eyebrow}>Partner / Admin Access</p>
         <h1 style={title}>{mode === "admin" ? "Admin Login" : "Employee Login"}</h1>
         <p style={subtitle}>

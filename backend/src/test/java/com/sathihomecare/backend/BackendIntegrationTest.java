@@ -1,6 +1,7 @@
 package com.sathihomecare.backend;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -8,12 +9,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sathihomecare.backend.entity.Booking;
 import com.sathihomecare.backend.entity.PartnerProfile;
+import com.sathihomecare.backend.entity.ServiceEntity;
 import com.sathihomecare.backend.entity.User;
+import com.sathihomecare.backend.entity.enums.BookingStatus;
 import com.sathihomecare.backend.entity.enums.PartnerStatus;
+import com.sathihomecare.backend.entity.enums.PaymentStatus;
 import com.sathihomecare.backend.entity.enums.Role;
+import com.sathihomecare.backend.entity.enums.ServiceCategory;
+import com.sathihomecare.backend.repository.BookingRepository;
 import com.sathihomecare.backend.repository.PartnerProfileRepository;
+import com.sathihomecare.backend.repository.ServiceRepository;
 import com.sathihomecare.backend.repository.UserRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -40,74 +49,70 @@ class BackendIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private ServiceRepository serviceRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
     private PartnerProfileRepository partnerProfileRepository;
 
     @Test
-    void registerRejectsDuplicatePhone() throws Exception {
-        registerCustomerAndReturnToken("first-customer@sathi.com", "9123456789");
+    void publicBookingCreatesPendingGuestBookingWithGeneratedCode() throws Exception {
+        ServiceEntity service = createService("Nursing Care");
 
-        mockMvc.perform(post("/api/auth/register/customer")
+        MvcResult result = mockMvc.perform(post("/api/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "fullName", "Duplicate Phone User",
-                                "email", "dup-phone@sathi.com",
-                                "phone", "9123456789",
-                                "password", "secret123"
-                        ))))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Phone already registered"));
-    }
-
-    @Test
-    void registerTreatsUserRoleAliasAsCustomer() throws Exception {
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "fullName", "Alias User",
-                                "email", "alias-user@sathi.com",
-                                "phone", "9234567890",
-                                "password", "secret123",
-                                "role", "user"
+                                "serviceId", service.getId(),
+                                "patientName", "Asha Kumari",
+                                "patientAge", 68,
+                                "gender", "Female",
+                                "mobileNumber", "9876543210",
+                                "email", "asha@example.com",
+                                "address", "221 Care Street, Patna",
+                                "preferredDate", "2026-06-20",
+                                "preferredTimeSlot", "10:00 AM - 12:00 PM",
+                                "additionalNotes", "Post surgery care"
                         ))))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.role").value("CUSTOMER"));
+                .andExpect(jsonPath("$.bookingStatus").value("PENDING"))
+                .andExpect(jsonPath("$.paymentStatus").value("NOT_REQUIRED"))
+                .andExpect(jsonPath("$.customerName").value("Asha Kumari"))
+                .andExpect(jsonPath("$.customerMobile").value("9876543210"))
+                .andExpect(jsonPath("$.serviceName").value("Nursing Care"))
+                .andReturn();
+
+        JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
+        String bookingCode = response.get("bookingCode").asText();
+        assertThat(bookingCode).matches("SHC-2026-\\d{5}");
+
+        Booking saved = bookingRepository.findByBookingCodeIgnoreCase(bookingCode).orElseThrow();
+        assertThat(saved.getCustomer()).isNull();
+        assertThat(saved.getBookingStatus()).isEqualTo(BookingStatus.PENDING);
+        assertThat(saved.getPaymentStatus()).isEqualTo(PaymentStatus.NOT_REQUIRED);
     }
 
     @Test
-    void registerRejectsUnknownRoleWithBadRequest() throws Exception {
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "fullName", "Bad Role User",
-                                "email", "bad-role@sathi.com",
-                                "phone", "9345678901",
-                                "password", "secret123",
-                                "role", "super-admin"
-                        ))))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Invalid role"));
-    }
+    void publicBookingCanBeTrackedAndReceiptDownloaded() throws Exception {
+        ServiceEntity service = createService("Physiotherapy");
+        String bookingCode = createGuestBooking(service, "9123456780");
 
-    @Test
-    void customerCanUpdateOwnProfile() throws Exception {
-        String token = registerCustomerAndReturnToken("profile-user@sathi.com", "9000000011");
-
-        mockMvc.perform(put("/api/customer/me")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "fullName", "Updated Profile User",
-                                "email", "profile-user-updated@sathi.com",
-                                "phone", "9000000022"
-                        ))))
+        mockMvc.perform(get("/api/bookings/track")
+                        .param("bookingId", bookingCode)
+                        .param("mobileNumber", "9123456780"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fullName").value("Updated Profile User"))
-                .andExpect(jsonPath("$.email").value("profile-user-updated@sathi.com"))
-                .andExpect(jsonPath("$.phone").value("9000000022"));
+                .andExpect(jsonPath("$.bookingCode").value(bookingCode))
+                .andExpect(jsonPath("$.bookingStatus").value("PENDING"));
 
-        User updatedUser = userRepository.findByEmail("profile-user-updated@sathi.com").orElseThrow();
-        assertThat(updatedUser.getFullName()).isEqualTo("Updated Profile User");
-        assertThat(updatedUser.getPhone()).isEqualTo("9000000022");
+        MvcResult receipt = mockMvc.perform(get("/api/bookings/receipt")
+                        .param("bookingId", bookingCode)
+                        .param("mobileNumber", "9123456780"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThat(receipt.getResponse().getContentType()).isEqualTo("application/pdf");
+        assertThat(receipt.getResponse().getContentAsByteArray()).isNotEmpty();
     }
 
     @Test
@@ -132,19 +137,25 @@ class BackendIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Email already in use"));
     }
 
-    private String registerCustomerAndReturnToken(String email, String phone) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/auth/register/customer")
+    private String createGuestBooking(ServiceEntity service, String mobileNumber) throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "fullName", "Profile User",
-                                "email", email,
-                                "phone", phone,
-                                "password", "secret123"
+                                "serviceId", service.getId(),
+                                "patientName", "Track Patient",
+                                "patientAge", 72,
+                                "gender", "Male",
+                                "mobileNumber", mobileNumber,
+                                "email", "track@example.com",
+                                "address", "Track Address, Patna",
+                                "preferredDate", "2026-07-01",
+                                "preferredTimeSlot", "08:00 AM - 10:00 AM",
+                                "additionalNotes", "Track test"
                         ))))
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        return readToken(result);
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("bookingCode").asText();
     }
 
     private String loginAdminAndReturnToken() throws Exception {
@@ -163,6 +174,16 @@ class BackendIntegrationTest {
     private String readToken(MvcResult result) throws Exception {
         JsonNode jsonNode = objectMapper.readTree(result.getResponse().getContentAsString());
         return jsonNode.get("token").asText();
+    }
+
+    private ServiceEntity createService(String name) {
+        ServiceEntity service = new ServiceEntity();
+        service.setName(name);
+        service.setCategory(ServiceCategory.NURSING);
+        service.setDescription(name + " service");
+        service.setPrice(BigDecimal.valueOf(1500));
+        service.setActive(true);
+        return serviceRepository.save(service);
     }
 
     private User createPartnerUser() {

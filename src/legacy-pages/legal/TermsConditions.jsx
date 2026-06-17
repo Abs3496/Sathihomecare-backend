@@ -6,8 +6,8 @@ const sections = [
     body: "SATHIHOMECARE provides home healthcare support services only. We are not a hospital, clinic, or medical authority. All medical decisions remain the responsibility of the patient and their doctor."
   },
   {
-    title: "Booking & Payment",
-    body: "Booking is confirmed only after receiving advance payment. We reserve the right to accept or reject any booking and to cancel or reschedule services at our discretion."
+    title: "Booking Requests",
+    body: "Website bookings are submitted without online payment. Our team reviews each request, confirms staff availability, and may accept, reject, cancel, or reschedule services at our discretion."
   },
   {
     title: "Service Modifications",
@@ -15,7 +15,7 @@ const sections = [
   },
   {
     title: "Service Termination",
-    body: "We may terminate services immediately in case of misbehavior or harassment, unsafe working environment, non-payment or delayed payment, or submission of false information. No refund will be provided in such cases."
+    body: "We may terminate services immediately in case of misbehavior or harassment, unsafe working environment, non-payment after service terms are confirmed, delayed payment, or submission of false information. No refund will be provided in such cases."
   },
   {
     title: "Limitation of Liability",

@@ -18,7 +18,11 @@ import com.sathihomecare.backend.repository.PartnerProfileRepository;
 import com.sathihomecare.backend.repository.PatientDetailsRepository;
 import com.sathihomecare.backend.repository.ServiceRepository;
 import com.sathihomecare.backend.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,9 @@ public class BookingService {
     private final AddressRepository addressRepository;
     private final PatientDetailsRepository patientDetailsRepository;
     private final PartnerProfileRepository partnerProfileRepository;
+    private final BookingReceiptService bookingReceiptService;
+    private final BookingEmailService bookingEmailService;
+    private final WhatsAppNotificationService whatsAppNotificationService;
 
     @Transactional
     public BookingResponse createBooking(String username, CreateBookingRequest request) {
@@ -40,39 +47,59 @@ public class BookingService {
         if (customer.getRole() != Role.CUSTOMER) {
             throw new IllegalArgumentException("Only customers can create bookings");
         }
+        return createBooking(request, customer);
+    }
 
+    @Transactional
+    public BookingResponse createGuestBooking(CreateBookingRequest request) {
+        return createBooking(request, null);
+    }
+
+    private BookingResponse createBooking(CreateBookingRequest request, User customer) {
         ServiceEntity service = serviceRepository.findById(request.getServiceId())
                 .filter(ServiceEntity::isActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
         Address address = new Address();
-        address.setLineOne(request.getAddressLineOne());
+        address.setLineOne(firstText(request.getAddressLineOne(), request.getAddress()));
         address.setLineTwo(request.getAddressLineTwo());
-        address.setCity(request.getCity());
-        address.setState(request.getState());
-        address.setPincode(request.getPincode());
+        address.setCity(firstText(request.getCity(), "NA"));
+        address.setState(firstText(request.getState(), "NA"));
+        address.setPincode(firstText(request.getPincode(), "000000"));
         address.setLandmark(request.getLandmark());
         Address savedAddress = addressRepository.save(address);
 
         PatientDetails patientDetails = new PatientDetails();
         patientDetails.setPatientName(request.getPatientName());
-        patientDetails.setPatientPhone(request.getPatientPhone());
+        patientDetails.setPatientPhone(firstText(request.getPatientPhone(), request.getMobileNumber()));
         patientDetails.setPatientAge(request.getPatientAge());
-        patientDetails.setPatientAddress(request.getPatientAddress());
-        patientDetails.setPatientIssues(request.getPatientIssues());
+        patientDetails.setGender(request.getGender());
+        patientDetails.setPatientAddress(firstText(request.getPatientAddress(), request.getAddress()));
+        patientDetails.setPatientIssues(firstText(request.getPatientIssues(), request.getAdditionalNotes(), ""));
         PatientDetails savedPatientDetails = patientDetailsRepository.save(patientDetails);
 
         Booking booking = new Booking();
+        booking.setBookingCode(generateBookingCode(request.getPreferredDate()));
         booking.setCustomer(customer);
+        booking.setCustomerName(customer != null ? customer.getFullName() : request.getPatientName());
+        booking.setCustomerMobile(request.getMobileNumber());
+        booking.setCustomerEmail(request.getEmail());
         booking.setService(service);
         booking.setServiceAddress(savedAddress);
         booking.setPatientDetails(savedPatientDetails);
-        booking.setBookingDateTime(request.getBookingDateTime());
+        booking.setPreferredDate(request.getPreferredDate());
+        booking.setPreferredTimeSlot(request.getPreferredTimeSlot());
+        booking.setBookingDateTime(LocalDateTime.of(request.getPreferredDate(), LocalTime.of(10, 0)));
+        booking.setAdditionalNotes(request.getAdditionalNotes());
         booking.setTotalAmount(service.getPrice());
-        booking.setBookingStatus(BookingStatus.PENDING_PAYMENT);
-        booking.setPaymentStatus(PaymentStatus.PENDING);
+        booking.setBookingStatus(BookingStatus.PENDING);
+        booking.setPaymentStatus(PaymentStatus.NOT_REQUIRED);
 
-        return toResponse(bookingRepository.save(booking));
+        Booking savedBooking = bookingRepository.save(booking);
+        byte[] receiptPdf = bookingReceiptService.generateReceipt(savedBooking);
+        bookingEmailService.sendBookingReceipt(savedBooking, receiptPdf);
+        whatsAppNotificationService.notifyBookingCreated(savedBooking);
+        return toResponse(savedBooking);
     }
 
     @Transactional(readOnly = true)
@@ -89,11 +116,38 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-        if (!booking.getCustomer().getId().equals(customer.getId())) {
+        if (booking.getCustomer() == null || !booking.getCustomer().getId().equals(customer.getId())) {
             throw new IllegalArgumentException("Booking does not belong to this customer");
         }
 
         return toResponse(booking);
+    }
+
+    @Transactional(readOnly = true)
+    public BookingResponse trackBooking(String bookingCode, String mobileNumber) {
+        Booking booking = bookingRepository.findByBookingCodeIgnoreCase(bookingCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+        if (!booking.getCustomerMobile().equals(mobileNumber)) {
+            throw new ResourceNotFoundException("Booking not found");
+        }
+        return toResponse(booking);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generateReceipt(String bookingCode, String mobileNumber) {
+        Booking booking = bookingRepository.findByBookingCodeIgnoreCase(bookingCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+        if (!booking.getCustomerMobile().equals(mobileNumber)) {
+            throw new ResourceNotFoundException("Booking not found");
+        }
+        return bookingReceiptService.generateReceipt(booking);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generateAdminReceipt(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+        return bookingReceiptService.generateReceipt(booking);
     }
 
     @Transactional
@@ -102,7 +156,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-        if (!booking.getCustomer().getId().equals(customer.getId())) {
+        if (booking.getCustomer() == null || !booking.getCustomer().getId().equals(customer.getId())) {
             throw new IllegalArgumentException("You can only cancel your own bookings");
         }
 
@@ -166,9 +220,6 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
 
         booking.setAssignedPartner(partner);
-        if (booking.getPaymentStatus() != PaymentStatus.SUCCESS) {
-            throw new IllegalArgumentException("Booking must be paid before assigning a partner");
-        }
         booking.setBookingStatus(BookingStatus.ASSIGNED);
         return toResponse(bookingRepository.save(booking));
     }
@@ -194,8 +245,11 @@ public class BookingService {
 
         return BookingResponse.builder()
                 .id(booking.getId())
-                .customerId(booking.getCustomer().getId())
-                .customerName(booking.getCustomer().getFullName())
+                .bookingCode(booking.getBookingCode())
+                .customerId(booking.getCustomer() != null ? booking.getCustomer().getId() : null)
+                .customerName(booking.getCustomerName())
+                .customerEmail(booking.getCustomerEmail())
+                .customerMobile(booking.getCustomerMobile())
                 .serviceId(booking.getService().getId())
                 .serviceName(booking.getService().getName())
                 .serviceCategory(booking.getService().getCategory())
@@ -204,11 +258,15 @@ public class BookingService {
                 .bookingStatus(booking.getBookingStatus())
                 .paymentStatus(booking.getPaymentStatus())
                 .bookingDateTime(booking.getBookingDateTime())
+                .preferredDate(booking.getPreferredDate())
+                .preferredTimeSlot(booking.getPreferredTimeSlot())
+                .additionalNotes(booking.getAdditionalNotes())
                 .partnerId(booking.getAssignedPartner() != null ? booking.getAssignedPartner().getId() : null)
                 .partnerName(booking.getAssignedPartner() != null ? booking.getAssignedPartner().getFullName() : null)
                 .partnerEmployeeId(partnerProfile != null ? partnerProfile.getEmployeeId() : null)
                 .patientName(booking.getPatientDetails().getPatientName())
                 .patientAge(booking.getPatientDetails().getPatientAge())
+                .patientGender(booking.getPatientDetails().getGender())
                 .patientPhone(booking.getPatientDetails().getPatientPhone())
                 .patientIssues(booking.getPatientDetails().getPatientIssues())
                 .fullAddress(formatAddress(booking.getServiceAddress()))
@@ -219,5 +277,24 @@ public class BookingService {
         String lineTwo = address.getLineTwo() == null || address.getLineTwo().isBlank() ? "" : ", " + address.getLineTwo();
         String landmark = address.getLandmark() == null || address.getLandmark().isBlank() ? "" : ", " + address.getLandmark();
         return address.getLineOne() + lineTwo + ", " + address.getCity() + ", " + address.getState() + " - " + address.getPincode() + landmark;
+    }
+
+    private String generateBookingCode(LocalDate preferredDate) {
+        int year = preferredDate.getYear();
+        long sequence = bookingRepository.count() + 1;
+        String code;
+        do {
+            code = String.format(Locale.ROOT, "SHC-%d-%05d", year, sequence++);
+        } while (bookingRepository.existsByBookingCode(code));
+        return code;
+    }
+
+    private String firstText(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return "";
     }
 }

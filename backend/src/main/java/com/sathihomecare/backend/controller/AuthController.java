@@ -2,15 +2,11 @@ package com.sathihomecare.backend.controller;
 
 import com.sathihomecare.backend.dto.auth.AdminLoginRequest;
 import com.sathihomecare.backend.dto.auth.AuthResponse;
-import com.sathihomecare.backend.dto.auth.CustomerLoginRequest;
-import com.sathihomecare.backend.dto.auth.CustomerRegisterRequest;
 import com.sathihomecare.backend.dto.auth.LoginRequest;
 import com.sathihomecare.backend.dto.auth.PartnerLoginRequest;
 import com.sathihomecare.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,41 +22,26 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/register/customer")
-    public ResponseEntity<AuthResponse> registerCustomer(@Valid @RequestBody CustomerRegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerCustomer(request));
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody CustomerRegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerCustomer(request));
-    }
-
-    @PostMapping("/login/customer")
-    public ResponseEntity<AuthResponse> loginCustomer(@Valid @RequestBody CustomerLoginRequest request) {
-        return ResponseEntity.ok(authService.loginCustomer(request));
-    }
-
     @PostMapping("/login/partner")
-    public ResponseEntity<AuthResponse> loginPartner(@Valid @RequestBody PartnerLoginRequest request) {
-        return ResponseEntity.ok(authService.loginPartner(request));
+    public AuthResponse loginPartner(@Valid @RequestBody PartnerLoginRequest request) {
+        return authService.loginPartner(request);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 
     @PostMapping("/login/admin")
-    public ResponseEntity<AuthResponse> loginAdmin(@Valid @RequestBody AdminLoginRequest request) {
-        return ResponseEntity.ok(authService.loginAdmin(request));
+    public AuthResponse loginAdmin(@Valid @RequestBody AdminLoginRequest request) {
+        return authService.loginAdmin(request);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@AuthenticationPrincipal UserDetails userDetails) {
+    public AuthResponse refresh(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
             throw new AuthenticationCredentialsNotFoundException("Authentication required");
         }
-        return ResponseEntity.ok(authService.refresh(userDetails.getUsername()));
+        return authService.refresh(userDetails.getUsername());
     }
 }
