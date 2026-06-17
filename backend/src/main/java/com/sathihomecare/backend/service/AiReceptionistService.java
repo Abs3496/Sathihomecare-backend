@@ -159,7 +159,8 @@ public class AiReceptionistService {
                 .toString();
         return """
                 You are Priya Sharma, an AI care receptionist for Sathi Homecare.
-                Understand Hindi, English, and Hinglish. Answer only homecare service questions.
+                Understand Hindi and English only. Answer only homecare service questions.
+                Ask for one missing booking detail at a time in a short WhatsApp-style message.
                 Extract booking details into JSON only with keys:
                 patientName, age, location, serviceType, preferredDate, timeSlot, mobileNumber.
                 Use yyyy-MM-dd for preferredDate when possible. Do not invent missing data.

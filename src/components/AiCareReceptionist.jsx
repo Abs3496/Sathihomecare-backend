@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "../api";
 import logo from "../assets/images/icons/logo.png";
 import carePhoto from "../assets/images/services/nursing.jpeg";
 
-const welcomeMessage = "Namaste! Main Priya hoon, aapki care needs samajhne aur booking mein madad kar sakti hoon. Aap kis ke liye care arrange karna chahte hain?";
+const welcomeMessage = "Namaste! Main Priya hoon. Main aapki care requirement samajhne aur booking mein madad kar sakti hoon. Please batayein care kis ke liye chahiye?";
 const coordinatorNumber = "918090806731";
 
 const initialDraft = {
@@ -16,8 +16,17 @@ const initialDraft = {
   mobileNumber: ""
 };
 
-const relationChips = ["Father", "Mother", "Self", "Senior Citizen", "Patient", "Not Sure"];
-const quickActions = ["Elder Care", "Home Nursing", "Post Surgery Care", "Physiotherapy", "Ayurvedic Therapy", "Talk to Human Expert"];
+const relationOptions = ["Father", "Mother", "Self", "Senior Citizen", "Patient", "Not Sure"];
+const serviceOptions = ["Home Nursing", "Elder Care", "Post Surgery Care", "Physiotherapy", "Ayurvedic Therapy"];
+const ageOptions = ["45", "55", "65", "75", "85"];
+const locationOptions = ["Lucknow", "Gomti Nagar", "Indira Nagar", "Aliganj", "Hazratganj"];
+const timeSlotOptions = ["08:00 AM - 10:00 AM", "10:00 AM - 12:00 PM", "12:00 PM - 02:00 PM", "04:00 PM - 06:00 PM"];
+
+function isoDate(offsetDays) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  return date.toISOString().slice(0, 10);
+}
 
 export default function AiCareReceptionist() {
   const [isVisible, setIsVisible] = useState(false);
@@ -26,18 +35,10 @@ export default function AiCareReceptionist() {
   const [draft, setDraft] = useState(initialDraft);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [speakerEnabled, setSpeakerEnabled] = useState(true);
   const [summary, setSummary] = useState("");
   const [canConfirm, setCanConfirm] = useState(false);
   const [booking, setBooking] = useState(null);
-  const recognitionRef = useRef(null);
   const bottomRef = useRef(null);
-
-  const speechSupported = useMemo(
-    () => typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window),
-    []
-  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsVisible(true), 2000);
@@ -48,14 +49,8 @@ export default function AiCareReceptionist() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading, summary, booking]);
 
-  const speak = (text) => {
-    if (!speakerEnabled || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "hi-IN";
-    utterance.rate = 0.95;
-    window.speechSynthesis.speak(utterance);
-  };
+  const userMessageCount = messages.filter((message) => message.role === "user").length;
+  const suggestions = getSuggestions({ draft, canConfirm, booking, userMessageCount });
 
   const sendMessage = async (text, confirmBooking = false) => {
     const content = String(text || "").trim();
@@ -81,43 +76,14 @@ export default function AiCareReceptionist() {
       setCanConfirm(Boolean(response.canConfirm));
       if (response.booking) setBooking(response.booking);
 
-      const reply = response.reply || "Theek hai Sir, thodi aur detail bata dijiye.";
+      const reply = response.reply || "Theek hai. Please next detail share karein.";
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-      speak(reply);
     } catch (error) {
-      const reply = error?.message || "Sorry Sir, abhi receptionist connect nahi ho pa rahi. Aap coordinator se baat kar sakte hain.";
+      const reply = error?.message || "Sorry, abhi receptionist connect nahi ho pa rahi. Aap coordinator se baat kar sakte hain.";
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleMic = () => {
-    if (!speechSupported) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Voice input is browser mein supported nahi hai. Aap message type kar dijiye Sir." }]);
-      return;
-    }
-
-    if (listening) {
-      recognitionRef.current?.stop();
-      setListening(false);
-      return;
-    }
-
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new Recognition();
-    recognition.lang = "hi-IN";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-    recognition.onresult = (event) => {
-      const transcript = event.results?.[0]?.[0]?.transcript || "";
-      setInput(transcript);
-      sendMessage(transcript);
-    };
-    recognition.onend = () => setListening(false);
-    recognitionRef.current = recognition;
-    setListening(true);
-    recognition.start();
   };
 
   if (!isVisible) return null;
@@ -126,7 +92,7 @@ export default function AiCareReceptionist() {
     return (
       <button type="button" onClick={() => setIsClosed(false)} style={floatingButton} aria-label="Open Priya care receptionist">
         <span style={floatingStatus} />
-        Priya Care
+        Priya Chat
       </button>
     );
   }
@@ -150,7 +116,6 @@ export default function AiCareReceptionist() {
             <p style={languageText}>Hindi - English</p>
           </div>
           <div style={heroTitleBlock}>
-            <p style={heroMini}>Sathi Care</p>
             <h1 style={heroTitle}>Welcome to<br /><span style={heroTitleAccent}>Sathi Care Reception</span></h1>
             <p style={heroSubtitle}>Get Care Guidance in <strong>Less Than 2 Minutes</strong></p>
             <div style={statsGrid}>
@@ -172,6 +137,9 @@ export default function AiCareReceptionist() {
               <ChatRow key={`${message.role}-${index}`} role={message.role} content={message.content} />
             ))}
             {loading ? <TypingRow /> : null}
+            {!loading && suggestions.length ? (
+              <SuggestionRow suggestions={suggestions} onSelect={sendMessage} />
+            ) : null}
             {summary && !booking ? (
               <div style={summaryCard}>
                 <strong>Booking Summary</strong>
@@ -192,27 +160,9 @@ export default function AiCareReceptionist() {
             <div ref={bottomRef} />
           </div>
 
-          <div style={relationRow}>
-            {relationChips.map((chip) => (
-              <button key={chip} type="button" onClick={() => sendMessage(`${chip} ke liye`)} style={relationChip}>
-                <span style={chipIcon}>{chip.slice(0, 1)}</span>
-                {chip}
-              </button>
-            ))}
-          </div>
-
-          <div style={quickBox}>
-            <p style={quickTitle}>Quick Actions</p>
-            <div style={quickGrid}>
-              {quickActions.map((item) => {
-                const isHuman = item === "Talk to Human Expert";
-                return isHuman ? (
-                  <a key={item} href={`tel:+${coordinatorNumber}`} style={quickChip}>{item}</a>
-                ) : (
-                  <button key={item} type="button" onClick={() => sendMessage(item)} style={quickChip}>{item}</button>
-                );
-              })}
-            </div>
+          <div style={humanActions}>
+            <a href={`https://wa.me/${coordinatorNumber}`} target="_blank" rel="noreferrer" style={humanButton}>WhatsApp Coordinator</a>
+            <a href={`tel:+${coordinatorNumber}`} style={humanButton}>Call Coordinator</a>
           </div>
 
           <form
@@ -222,25 +172,55 @@ export default function AiCareReceptionist() {
             }}
             style={inputRow}
           >
-            <button type="button" onClick={toggleMic} style={{ ...micButton, background: listening ? "#ef476f" : "#43c59e" }} aria-label="Voice microphone">
-              MIC
-            </button>
-            <div style={inputShell}>
-              <input
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder="Type a message..."
-                style={textInput}
-              />
-              <button type="button" onClick={() => setSpeakerEnabled((prev) => !prev)} style={speakerButton} aria-label="Speaker">
-                {speakerEnabled ? "ON" : "OFF"}
-              </button>
-            </div>
-            <button type="submit" disabled={loading} style={sendButton} aria-label="Send message">GO</button>
+            <input
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Type your answer in Hindi or English..."
+              style={textInput}
+            />
+            <button type="submit" disabled={loading} style={sendButton} aria-label="Send message">Send</button>
           </form>
           <p style={secureText}>Your information is secure and confidential.</p>
         </div>
       </section>
+    </div>
+  );
+}
+
+function getSuggestions({ draft, canConfirm, booking, userMessageCount }) {
+  if (booking) return [];
+  if (canConfirm) return [{ label: "Confirm Booking", value: "__CONFIRM__" }];
+  if (userMessageCount === 0) return relationOptions.map((item) => ({ label: item, value: `Care for ${item}` }));
+  if (!draft.serviceType) return serviceOptions.map((item) => ({ label: item, value: `Service type: ${item}` }));
+  if (!draft.age) return ageOptions.map((item) => ({ label: `${item} years`, value: `Patient age is ${item}` }));
+  if (!draft.location) return locationOptions.map((item) => ({ label: item, value: `Location is ${item}` }));
+  if (!draft.preferredDate) {
+    return [
+      { label: "Today", value: `Preferred date is ${isoDate(0)}` },
+      { label: "Tomorrow", value: `Preferred date is ${isoDate(1)}` },
+      { label: "Day After", value: `Preferred date is ${isoDate(2)}` }
+    ];
+  }
+  if (!draft.timeSlot) return timeSlotOptions.map((item) => ({ label: item, value: `Preferred time slot is ${item}` }));
+  if (!draft.patientName) return [{ label: "Type Patient Name", value: "" }];
+  if (!draft.mobileNumber) return [{ label: "Type Mobile Number", value: "" }];
+  return [];
+}
+
+function SuggestionRow({ suggestions, onSelect }) {
+  return (
+    <div style={suggestionWrap}>
+      {suggestions.map((suggestion) => (
+        <button
+          key={suggestion.label}
+          type="button"
+          disabled={!suggestion.value}
+          onClick={() => suggestion.value === "__CONFIRM__" ? onSelect("", true) : onSelect(suggestion.value)}
+          style={{ ...suggestionChip, opacity: suggestion.value ? 1 : 0.65, cursor: suggestion.value ? "pointer" : "default" }}
+        >
+          {suggestion.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -271,7 +251,7 @@ function TypingRow() {
   return (
     <div style={assistantRow}>
       <Avatar />
-      <div style={{ ...assistantBubble, width: "140px" }}>
+      <div style={{ ...assistantBubble, width: "130px" }}>
         <span style={typingDot} />
         <span style={typingDot} />
         <span style={typingDot} />
@@ -297,105 +277,104 @@ const overlayStyle = {
   backdropFilter: "blur(5px)",
   display: "grid",
   placeItems: "center",
-  padding: "24px",
+  padding: "18px",
   fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
 };
 
 const modalStyle = {
-  width: "min(1120px, calc(100vw - 32px))",
-  height: "min(900px, calc(100vh - 32px))",
+  width: "min(1120px, calc(100vw - 24px))",
+  height: "min(820px, calc(100vh - 24px))",
   background: "#ffffff",
-  borderRadius: "34px",
+  borderRadius: "28px",
   overflow: "hidden",
   boxShadow: "0 32px 90px rgba(0, 0, 0, 0.45)",
   display: "grid",
-  gridTemplateRows: "minmax(300px, 430px) minmax(0, 1fr)"
+  gridTemplateRows: "270px minmax(0, 1fr)"
 };
 
 const heroStyle = {
   position: "relative",
   overflow: "hidden",
-  background: "linear-gradient(105deg, #041c34 0%, #08294a 48%, #0b4163 100%)",
+  background: "linear-gradient(105deg, #041c34 0%, #08294a 47%, #0b4163 100%)",
   color: "#ffffff",
-  borderBottomLeftRadius: "28px",
-  borderBottomRightRadius: "28px",
+  borderBottomLeftRadius: "22px",
+  borderBottomRightRadius: "22px",
   boxShadow: "0 10px 22px rgba(36, 211, 186, 0.22)"
 };
 
 const closeButton = {
   position: "absolute",
-  top: "28px",
-  right: "28px",
-  width: "56px",
-  height: "56px",
+  top: "24px",
+  right: "24px",
+  width: "50px",
+  height: "50px",
   borderRadius: "50%",
   border: "none",
-  background: "rgba(255, 255, 255, 0.15)",
+  background: "rgba(0, 0, 0, 0.28)",
   color: "#ffffff",
-  fontSize: "22px",
+  fontSize: "20px",
   cursor: "pointer",
   zIndex: 4
 };
 
 const logoCard = {
   position: "absolute",
-  top: "26px",
+  top: "22px",
   left: "0",
   minWidth: "230px",
-  height: "116px",
-  padding: "22px 28px",
+  height: "94px",
+  padding: "18px 26px",
   background: "#ffffff",
   color: "#071b3a",
-  borderTopRightRadius: "58px",
-  borderBottomRightRadius: "58px",
+  borderTopRightRadius: "48px",
+  borderBottomRightRadius: "48px",
   display: "flex",
   alignItems: "center",
   gap: "12px",
   zIndex: 3
 };
 
-const logoStyle = { width: "64px", height: "64px", objectFit: "contain" };
-const logoText = { display: "block", fontSize: "28px", lineHeight: 1, letterSpacing: "0" };
-const logoSubtext = { display: "block", fontSize: "15px", fontWeight: 900 };
+const logoStyle = { width: "54px", height: "54px", objectFit: "contain" };
+const logoText = { display: "block", fontSize: "26px", lineHeight: 1, letterSpacing: "0" };
+const logoSubtext = { display: "block", fontSize: "14px", fontWeight: 900 };
 
 const profileBlock = {
   position: "absolute",
-  top: "38px",
+  top: "36px",
   left: "260px",
   zIndex: 3
 };
 
-const profileName = { margin: 0, fontSize: "28px", letterSpacing: "0" };
-const profileRole = { margin: "8px 0", color: "#d6e7f3", fontSize: "18px" };
-const availableText = { margin: "0 0 6px", color: "#36e09f", fontWeight: 800, display: "flex", alignItems: "center", gap: "8px" };
+const profileName = { margin: 0, fontSize: "26px", letterSpacing: "0" };
+const profileRole = { margin: "6px 0", color: "#d6e7f3", fontSize: "16px" };
+const availableText = { margin: "0 0 5px", color: "#36e09f", fontWeight: 800, display: "flex", alignItems: "center", gap: "8px" };
 const greenDot = { width: "10px", height: "10px", borderRadius: "50%", background: "#22c55e", display: "inline-block" };
 const languageText = { margin: 0, color: "#49d6c4" };
 
 const heroTitleBlock = {
   position: "absolute",
   left: "42px",
-  bottom: "42px",
+  bottom: "30px",
   zIndex: 3,
-  width: "520px"
+  width: "510px"
 };
 
-const heroMini = { margin: "0 0 10px 390px", color: "#34d6c6", fontSize: "20px", fontWeight: 800 };
-const heroTitle = { margin: 0, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "40px", lineHeight: 1.12, letterSpacing: "0" };
+const heroTitle = { margin: 0, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "32px", lineHeight: 1.12, letterSpacing: "0" };
 const heroTitleAccent = { color: "#36d9c3" };
-const heroSubtitle = { margin: "18px 0 28px", color: "#f2f8ff", fontSize: "18px" };
+const heroSubtitle = { margin: "12px 0 18px", color: "#f2f8ff", fontSize: "16px" };
 
 const statsGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-  gap: "20px",
-  maxWidth: "560px"
+  gap: "18px",
+  maxWidth: "520px"
 };
 
 const statItem = {
   display: "grid",
-  gap: "5px",
+  gap: "4px",
   color: "#d6e7f3",
-  fontSize: "12px"
+  fontSize: "11px"
 };
 
 const photoWrap = {
@@ -415,46 +394,55 @@ const photoStyle = {
 
 const chatArea = {
   minHeight: 0,
-  padding: "26px 38px 20px",
+  padding: "18px 34px 16px",
   background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
   display: "grid",
-  gridTemplateRows: "auto minmax(120px, 1fr) auto auto auto auto",
-  gap: "14px"
+  gridTemplateRows: "auto minmax(0, 1fr) auto auto auto",
+  gap: "10px"
 };
 
-const timeStamp = { textAlign: "center", color: "#73839a", fontSize: "13px" };
-const messageList = { minHeight: 0, overflowY: "auto", display: "grid", gap: "14px", paddingRight: "8px" };
-const assistantRow = { display: "flex", alignItems: "flex-start", gap: "14px" };
+const timeStamp = { textAlign: "center", color: "#73839a", fontSize: "12px" };
+const messageList = { minHeight: 0, overflowY: "auto", display: "grid", alignContent: "start", gap: "12px", padding: "0 8px 2px 0" };
+const assistantRow = { display: "flex", alignItems: "flex-start", gap: "12px" };
 const userRow = { display: "flex", justifyContent: "flex-end" };
-const avatarStyle = { position: "relative", width: "58px", height: "58px", flex: "0 0 auto" };
-const avatarImage = { width: "58px", height: "58px", borderRadius: "50%", objectFit: "cover", objectPosition: "35% 35%" };
-const avatarOnline = { position: "absolute", right: "1px", bottom: "2px", width: "14px", height: "14px", borderRadius: "50%", background: "#22c55e", border: "3px solid #ffffff" };
-const assistantBubble = { maxWidth: "430px", background: "#ffffff", color: "#102542", padding: "18px 22px", borderRadius: "0 16px 16px 16px", lineHeight: 1.7, boxShadow: "0 14px 32px rgba(15, 23, 42, 0.1)", whiteSpace: "pre-wrap" };
-const userBubble = { maxWidth: "360px", background: "#dff9e9", color: "#0c342d", padding: "15px 22px", borderRadius: "16px 16px 0 16px", lineHeight: 1.6, boxShadow: "0 12px 28px rgba(67, 197, 158, 0.2)", whiteSpace: "pre-wrap" };
-const bubbleTime = { marginLeft: "18px", color: "#7aa395", fontSize: "12px" };
-const typingDot = { display: "inline-block", width: "9px", height: "9px", borderRadius: "50%", background: "#b6c0cf", marginRight: "8px" };
+const avatarStyle = { position: "relative", width: "52px", height: "52px", flex: "0 0 auto" };
+const avatarImage = { width: "52px", height: "52px", borderRadius: "50%", objectFit: "cover", objectPosition: "35% 35%" };
+const avatarOnline = { position: "absolute", right: "1px", bottom: "2px", width: "13px", height: "13px", borderRadius: "50%", background: "#22c55e", border: "3px solid #ffffff" };
+const assistantBubble = { maxWidth: "480px", background: "#ffffff", color: "#102542", padding: "15px 18px", borderRadius: "0 16px 16px 16px", lineHeight: 1.65, boxShadow: "0 12px 28px rgba(15, 23, 42, 0.1)", whiteSpace: "pre-wrap" };
+const userBubble = { maxWidth: "390px", background: "#dff9e9", color: "#0c342d", padding: "13px 18px", borderRadius: "16px 16px 0 16px", lineHeight: 1.55, boxShadow: "0 12px 28px rgba(67, 197, 158, 0.2)", whiteSpace: "pre-wrap" };
+const bubbleTime = { marginLeft: "14px", color: "#7aa395", fontSize: "11px" };
+const typingDot = { display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#b6c0cf", marginRight: "7px" };
 
-const relationRow = { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "12px" };
-const relationChip = { border: "none", minHeight: "52px", padding: "0 22px", borderRadius: "14px", background: "#ffffff", color: "#0f1f38", boxShadow: "0 10px 26px rgba(15, 23, 42, 0.1)", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "10px" };
-const chipIcon = { width: "22px", height: "22px", borderRadius: "8px", background: "#e7f7ff", color: "#2563eb", display: "grid", placeItems: "center", fontSize: "12px" };
+const suggestionWrap = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "8px",
+  marginLeft: "64px",
+  maxWidth: "760px"
+};
 
-const quickBox = { border: "1px solid #e3ebf5", borderRadius: "18px", padding: "18px 22px", background: "rgba(255, 255, 255, 0.92)" };
-const quickTitle = { margin: "0 0 14px", color: "#0f9f83", fontWeight: 900 };
-const quickGrid = { display: "flex", flexWrap: "wrap", gap: "10px" };
-const quickChip = { border: "1px solid #dae5f0", background: "#ffffff", borderRadius: "12px", padding: "11px 18px", color: "#102542", fontWeight: 800, cursor: "pointer", textDecoration: "none" };
+const suggestionChip = {
+  border: "1px solid #d7e3ef",
+  background: "#ffffff",
+  color: "#102542",
+  borderRadius: "999px",
+  padding: "10px 15px",
+  fontWeight: 800,
+  boxShadow: "0 8px 18px rgba(15, 23, 42, 0.08)"
+};
 
-const inputRow = { display: "grid", gridTemplateColumns: "64px minmax(0, 1fr) 64px", gap: "16px", alignItems: "center" };
-const micButton = { width: "56px", height: "56px", borderRadius: "50%", border: "none", color: "#ffffff", boxShadow: "0 10px 24px rgba(67, 197, 158, 0.32)", cursor: "pointer", fontWeight: 900 };
-const inputShell = { height: "56px", borderRadius: "28px", background: "#ffffff", border: "1px solid #e3ebf5", boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)", display: "grid", gridTemplateColumns: "minmax(0, 1fr) 52px", alignItems: "center", padding: "0 8px 0 20px" };
-const textInput = { width: "100%", minWidth: 0, border: "none", outline: "none", color: "#102542", fontSize: "16px", background: "transparent" };
-const speakerButton = { border: "none", width: "42px", height: "42px", borderRadius: "50%", background: "#f1f5f9", color: "#66758a", cursor: "pointer", fontWeight: 900 };
-const sendButton = { width: "56px", height: "56px", borderRadius: "50%", border: "none", background: "#6bc5af", color: "#ffffff", cursor: "pointer", fontWeight: 900, fontSize: "14px" };
-const secureText = { margin: "-4px 0 0", textAlign: "center", color: "#73839a", fontSize: "13px" };
+const humanActions = { display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap" };
+const humanButton = { border: "1px solid #d7e3ef", borderRadius: "999px", background: "#ffffff", color: "#0f766e", padding: "9px 14px", fontWeight: 900, textDecoration: "none" };
 
-const summaryCard = { justifySelf: "center", width: "min(560px, 100%)", background: "#ffffff", border: "1px solid #c7f1e8", borderRadius: "18px", padding: "18px", boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)", color: "#102542" };
+const inputRow = { display: "grid", gridTemplateColumns: "minmax(0, 1fr) 92px", gap: "12px", alignItems: "center" };
+const textInput = { width: "100%", minWidth: 0, height: "54px", border: "1px solid #e3ebf5", borderRadius: "27px", outline: "none", color: "#102542", fontSize: "16px", background: "#ffffff", padding: "0 20px", boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)" };
+const sendButton = { height: "54px", borderRadius: "27px", border: "none", background: "#6bc5af", color: "#ffffff", cursor: "pointer", fontWeight: 900, fontSize: "15px" };
+const secureText = { margin: "-2px 0 0", textAlign: "center", color: "#73839a", fontSize: "12px" };
+
+const summaryCard = { justifySelf: "center", width: "min(560px, 100%)", background: "#ffffff", border: "1px solid #c7f1e8", borderRadius: "18px", padding: "16px", boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)", color: "#102542" };
 const summaryText = { margin: "10px 0 14px", whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: 1.6, color: "#334155" };
 const confirmButton = { border: "none", borderRadius: "14px", padding: "13px 18px", background: "#0f766e", color: "#ffffff", fontWeight: 900, cursor: "pointer" };
-const bookingCard = { justifySelf: "center", display: "grid", gap: "6px", width: "min(460px, 100%)", background: "#ecfffb", border: "1px solid #b7f3e8", borderRadius: "18px", padding: "18px", color: "#0f3f3a", boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)" };
+const bookingCard = { justifySelf: "center", display: "grid", gap: "6px", width: "min(460px, 100%)", background: "#ecfffb", border: "1px solid #b7f3e8", borderRadius: "18px", padding: "16px", color: "#0f3f3a", boxShadow: "0 12px 28px rgba(15, 23, 42, 0.08)" };
 
 const floatingButton = {
   position: "fixed",
@@ -481,16 +469,13 @@ if (typeof document !== "undefined" && !document.getElementById("sathi-care-rece
   style.textContent = `
     @media (max-width: 820px) {
       [aria-label="Sathi care receptionist"] {
-        height: calc(100vh - 18px) !important;
-        width: calc(100vw - 18px) !important;
-        border-radius: 22px !important;
-        grid-template-rows: 250px minmax(0, 1fr) !important;
+        height: calc(100vh - 14px) !important;
+        width: calc(100vw - 14px) !important;
+        border-radius: 18px !important;
+        grid-template-rows: 210px minmax(0, 1fr) !important;
       }
       [aria-label="Sathi care receptionist"] h1 {
-        font-size: 28px !important;
-      }
-      [aria-label="Sathi care receptionist"] form {
-        grid-template-columns: 52px minmax(0, 1fr) 52px !important;
+        font-size: 24px !important;
       }
     }
   `;
