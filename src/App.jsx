@@ -16,7 +16,7 @@ import Faq from "./legacy-pages/Faq";
 import CartBar from "./components/CartBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SiteFooter from "./components/SiteFooter";
-import AiCareReceptionist from "./components/AiCareReceptionist";
+import SathiCareBot from "./components/SathiCareBot";
 
 function App() {
   return (
@@ -59,7 +59,7 @@ function App() {
         </main>
 
         <SiteFooter />
-        <AiCareReceptionist />
+        <SathiCareBot phone="+91 63929 52884" />
       </div>
     </BrowserRouter>
   );
