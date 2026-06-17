@@ -5,8 +5,8 @@ export const metadata = {
 };
 
 const founders = [
-  ["Dharmendra", "Care coordination"],
-  ["Pinku", "Service support"]
+  ["Dharmendra", "Founder"],
+  ["Pinku", "CEO"]
 ];
 
 export default function FoundersPage() {

@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**",
                     "/api/services/**",
+                    "/api/ai-receptionist/**",
                     "/api/health"
                 ).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/bookings", "/api/bookings/create").permitAll()

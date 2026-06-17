@@ -60,7 +60,7 @@ describe("Checkout page", () => {
   it("renders direct booking form without login or payment prompt", () => {
     renderCheckout();
 
-    expect(screen.getByRole("heading", { name: /service booking without login or payment friction/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /book trusted care at home/i })).toBeInTheDocument();
     expect(screen.getByLabelText("Patient Name")).toBeInTheDocument();
     expect(screen.getByLabelText("Preferred Date")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Submit Booking" })).toBeEnabled();

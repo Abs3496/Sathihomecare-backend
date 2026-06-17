@@ -10,6 +10,7 @@ Phase 1 Java backend scaffold for the Sathi Homecare project.
 - admin login
 - public services catalog APIs
 - public guest booking creation, tracking, and receipt APIs
+- AI care receptionist API backed by Gemini API with booking creation
 - partner assigned-booking APIs
 - admin booking and partner overview APIs
 - PDF receipt generation, customer/business email hooks, and WhatsApp notification hooks
@@ -51,6 +52,8 @@ Important environment variables:
 - `APP_WHATSAPP_BUSINESS_NUMBER`
 - `APP_WHATSAPP_API_URL`
 - `APP_WHATSAPP_API_TOKEN`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 - `APP_EMAIL_FROM`
 - `APP_EMAIL_ADMIN_TO`
 - `RESEND_API_KEY`

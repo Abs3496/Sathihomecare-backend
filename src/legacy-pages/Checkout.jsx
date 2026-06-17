@@ -117,7 +117,7 @@ export default function Checkout() {
       <div style={shellStyle}>
         <div style={headerStyle}>
           <p style={eyebrow}>Book in under 2 minutes</p>
-          <h1 style={titleStyle}>Service booking without login or payment friction</h1>
+          <h1 style={titleStyle}>Book trusted care at home</h1>
           <p style={subtitleStyle}>Share patient details, choose a preferred date and time slot, and our team will confirm staff availability.</p>
         </div>
 
@@ -216,6 +216,6 @@ const formGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minma
 const labelStyle = { display: "grid", gap: "8px", color: "#334155", fontWeight: 700, marginTop: "18px" };
 const inputStyle = { minHeight: "50px", borderRadius: "12px", border: "1px solid #d7e3ef", padding: "0 14px", fontSize: "15px", background: "#ffffff" };
 const textareaStyle = { minHeight: "124px", borderRadius: "12px", border: "1px solid #d7e3ef", padding: "14px", fontSize: "15px", resize: "vertical", background: "#ffffff" };
-const buttonStyle = { marginTop: "22px", width: "100%", border: "none", borderRadius: "14px", background: "#d7263d", color: "#ffffff", padding: "16px 18px", fontWeight: 900, fontSize: "16px", cursor: "pointer" };
+const buttonStyle = { marginTop: "22px", width: "100%", border: "none", borderRadius: "14px", background: "#0f766e", color: "#ffffff", padding: "16px 18px", fontWeight: 900, fontSize: "16px", cursor: "pointer" };
 const errorStyle = { margin: "18px 0 0", color: "#d7263d", fontWeight: 800, lineHeight: 1.6 };
 const trackLink = { display: "inline-flex", marginTop: "16px", color: "#102542", fontWeight: 800, textDecoration: "none" };

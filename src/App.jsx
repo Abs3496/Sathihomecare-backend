@@ -16,6 +16,7 @@ import Faq from "./legacy-pages/Faq";
 import CartBar from "./components/CartBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SiteFooter from "./components/SiteFooter";
+import AiCareReceptionist from "./components/AiCareReceptionist";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
         </main>
 
         <SiteFooter />
+        <AiCareReceptionist />
       </div>
     </BrowserRouter>
   );

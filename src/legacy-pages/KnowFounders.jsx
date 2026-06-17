@@ -6,7 +6,7 @@ const founders = [
   {
     key: "dharmendra",
     name: "Dharmendra Tiwari",
-    role: "Co-Founder",
+    role: "Founder",
     summary: [
       "Professional Ayurvedic Therapist",
       "10+ years experience"
@@ -16,7 +16,7 @@ const founders = [
   {
     key: "pinku",
     name: "Pinku",
-    role: "CEO (Operations)",
+    role: "CEO",
     summary: [
       "Nursing Expert",
       "5+ years experience"

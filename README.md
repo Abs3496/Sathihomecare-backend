@@ -8,6 +8,7 @@ Sathi Homecare is a full-stack homecare booking platform with:
 - service catalogue browsing
 - direct customer booking without login or online payment
 - booking receipt download and tracking
+- AI care receptionist powered by Gemini API
 - admin partner/service management
 
 ## Project Structure
@@ -83,6 +84,8 @@ Backend environment values:
 - `APP_WHATSAPP_BUSINESS_NUMBER`
 - `APP_WHATSAPP_API_URL`
 - `APP_WHATSAPP_API_TOKEN`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 - `APP_EMAIL_FROM`
 - `APP_EMAIL_ADMIN_TO`
 - `RESEND_API_KEY`
