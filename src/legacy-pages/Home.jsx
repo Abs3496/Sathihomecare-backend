@@ -253,6 +253,15 @@ export default function Home() {
               <Link to="/founders" style={heroNavLink} onClick={() => setIsMenuOpen(false)}>Know the Founders</Link>
               <Link to="/track-booking" style={heroNavLink} onClick={() => setIsMenuOpen(false)}>Track Booking</Link>
               <Link to="/partner/login" style={loginLink} onClick={() => setIsMenuOpen(false)}>Staff Login</Link>
+              <a
+                href="https://wa.me/919451764251?text=Emergency%20booking%20request%20for%20Sathi%20Homecare.%20Please%20contact%20me."
+                target="_blank"
+                rel="noreferrer"
+                style={emergencyBookingLink}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Emergency Booking
+              </a>
               <Link to={dashboardPath} style={avatarLink} onClick={() => setIsMenuOpen(false)}>
                 {partner?.name?.charAt(0) || "S"}
               </Link>
@@ -599,6 +608,17 @@ const loginLink = {
   color: "#ffffff",
   fontWeight: 700,
   background: "rgba(255,255,255,0.06)"
+};
+
+const emergencyBookingLink = {
+  padding: "12px 18px",
+  borderRadius: "14px",
+  textDecoration: "none",
+  color: "#ffffff",
+  fontWeight: 800,
+  background: "#16a34a",
+  boxShadow: "0 12px 26px rgba(22, 163, 74, 0.22)",
+  whiteSpace: "nowrap"
 };
 
 const avatarLink = {

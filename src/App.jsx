@@ -59,7 +59,7 @@ function App() {
         </main>
 
         <SiteFooter />
-        <SathiCareBot phone="+91 63929 52884" />
+        <SathiCareBot phone="+91 94517 64251" />
       </div>
     </BrowserRouter>
   );
